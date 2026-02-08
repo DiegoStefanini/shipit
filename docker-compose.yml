@@ -1,0 +1,57 @@
+services:
+  traefik:
+    image: traefik:v3.0
+    command:
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web.address=:80
+      - --providers.docker.network=shipit-net
+    ports:
+      - "80:80"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - shipit-net
+    restart: unless-stopped
+
+  api:
+    build: ./packages/backend
+    environment:
+      - PORT=3001
+      - DATA_DIR=/data
+      - DOCKER_NETWORK=shipit-net
+      - GITEA_URL=http://192.168.1.44:3000
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - shipit-data:/data
+      - /tmp/shipit-builds:/tmp/shipit-builds
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.shipit-api.rule=Host(`deploy.stefaniniserver.com`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))
+      - traefik.http.routers.shipit-api.priority=10
+      - traefik.http.services.shipit-api.loadbalancer.server.port=3001
+    networks:
+      - shipit-net
+    restart: unless-stopped
+    depends_on:
+      - traefik
+
+  frontend:
+    build: ./packages/frontend
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.shipit-ui.rule=Host(`deploy.stefaniniserver.com`)
+      - traefik.http.routers.shipit-ui.priority=1
+      - traefik.http.services.shipit-ui.loadbalancer.server.port=80
+    networks:
+      - shipit-net
+    restart: unless-stopped
+    depends_on:
+      - api
+
+volumes:
+  shipit-data:
+
+networks:
+  shipit-net:
+    name: shipit-net

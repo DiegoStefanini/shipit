@@ -1,0 +1,19 @@
+name: Deploy ShipIt
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: 192.168.1.44
+          username: diego
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            cd ~/services/shipit
+            git pull origin main
+            docker compose up -d --build

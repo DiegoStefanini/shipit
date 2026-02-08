@@ -1,0 +1,5 @@
+{
+  "name": "shipit",
+  "private": true,
+  "workspaces": ["packages/backend", "packages/frontend"]
+}
