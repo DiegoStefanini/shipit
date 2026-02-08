@@ -1,4 +1,4 @@
-import * as Dockerode from 'dockerode';
+import Dockerode from 'dockerode';
 
 const docker = new Dockerode({ socketPath: '/var/run/docker.sock' });
 
@@ -63,14 +63,14 @@ export async function stopAndRemove(containerId: string): Promise<void> {
 
 export async function pruneOldImages(projectName: string): Promise<void> {
   const images = await docker.listImages();
-  const projectImages = images.filter((img) =>
-    img.RepoTags?.some((t) => t.startsWith(`shipit-${projectName}:`)),
+  const projectImages = images.filter((img: Dockerode.ImageInfo) =>
+    img.RepoTags?.some((t: string) => t.startsWith(`shipit-${projectName}:`)),
   );
 
   // Keep only the latest image, remove the rest
   if (projectImages.length <= 1) return;
 
-  const sorted = projectImages.sort((a, b) => b.Created - a.Created);
+  const sorted = projectImages.sort((a: Dockerode.ImageInfo, b: Dockerode.ImageInfo) => b.Created - a.Created);
   for (const img of sorted.slice(1)) {
     try {
       await docker.getImage(img.Id).remove({ force: true });
