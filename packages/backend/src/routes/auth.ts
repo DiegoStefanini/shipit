@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import * as jwt from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { config } from '../config.js';
 import { authMiddleware, JwtPayload } from '../middleware/auth.js';
 
