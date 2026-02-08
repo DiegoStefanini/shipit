@@ -13,7 +13,7 @@ app.use(cors());
 app.use(express.json());
 
 app.get('/api/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: Date.now() });
+  res.json({ status: 'ok', version: config.version, timestamp: Date.now() });
 });
 
 app.use('/api/projects', projectsRouter);
