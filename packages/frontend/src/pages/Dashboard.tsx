@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import ProjectCard from '../components/ProjectCard'
+import { apiFetch } from '../api'
 
 interface Project {
   id: string
@@ -17,7 +18,7 @@ export default function Dashboard() {
   const [search, setSearch] = useState('')
 
   useEffect(() => {
-    fetch('/api/projects')
+    apiFetch('/api/projects')
       .then((r) => {
         if (!r.ok) throw new Error('Failed to fetch projects')
         return r.json()

@@ -1,6 +1,7 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
 import { enqueueBuild } from '../engine/builder.js';
+import { config } from '../config.js';
 
 const router = Router();
 
@@ -18,6 +19,12 @@ interface GiteaWebhookPayload {
 
 // POST /api/webhooks/gitea
 router.post('/gitea', (req: Request, res: Response) => {
+  const secret = req.headers['x-gitea-secret'] as string | undefined ?? (req.query.secret as string | undefined);
+  if (secret !== config.webhookSecret) {
+    res.status(401).json({ error: 'Invalid webhook secret' });
+    return;
+  }
+
   const payload = req.body as GiteaWebhookPayload;
 
   const repoFullName = payload.repository?.full_name;

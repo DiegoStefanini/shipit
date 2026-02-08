@@ -378,6 +378,83 @@ label {
   text-decoration: underline;
 }
 
+/* Navbar right section */
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-user {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+/* Login page */
+.login-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.login-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 40px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.login-header h1 {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.login-header .logo-icon {
+  font-size: 24px;
+}
+
+.login-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.login-btn {
+  width: 100%;
+  justify-content: center;
+  padding: 10px 16px;
+  margin-top: 4px;
+}
+
+.login-card input[type="password"] {
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.15s;
+}
+
+.login-card input[type="password"]:focus {
+  border-color: var(--primary);
+}
+
 /* Log viewer scrollbar */
 ::-webkit-scrollbar {
   width: 8px;

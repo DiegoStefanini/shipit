@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../api'
 
 export default function NewProject() {
   const navigate = useNavigate()
@@ -21,7 +22,7 @@ export default function NewProject() {
     setError('')
 
     try {
-      const res = await fetch('/api/projects', {
+      const res = await apiFetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, gitea_repo: giteaRepo, gitea_url: giteaUrl, branch }),

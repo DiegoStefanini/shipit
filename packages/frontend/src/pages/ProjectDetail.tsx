@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import DeployStatus from '../components/DeployStatus'
 import LogViewer from '../components/LogViewer'
+import { apiFetch } from '../api'
 
 interface Deploy {
   id: string
@@ -31,7 +32,7 @@ export default function ProjectDetail() {
   const [expandedDeploy, setExpandedDeploy] = useState<string | null>(null)
 
   const fetchProject = () => {
-    fetch(`/api/projects/${id}`)
+    apiFetch(`/api/projects/${id}`)
       .then((r) => {
         if (!r.ok) throw new Error('Project not found')
         return r.json()
@@ -48,7 +49,7 @@ export default function ProjectDetail() {
   const handleDeploy = async () => {
     setDeploying(true)
     try {
-      const res = await fetch(`/api/projects/${id}/deploy`, { method: 'POST' })
+      const res = await apiFetch(`/api/projects/${id}/deploy`, { method: 'POST' })
       if (!res.ok) throw new Error('Deploy failed to start')
       fetchProject()
     } catch (e: any) {
@@ -60,7 +61,7 @@ export default function ProjectDetail() {
 
   const handleDelete = async () => {
     try {
-      const res = await fetch(`/api/projects/${id}`, { method: 'DELETE' })
+      const res = await apiFetch(`/api/projects/${id}`, { method: 'DELETE' })
       if (!res.ok) throw new Error('Failed to delete project')
       navigate('/')
     } catch (e: any) {
