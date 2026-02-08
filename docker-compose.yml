@@ -23,7 +23,7 @@ services:
       - GITEA_URL=http://192.168.1.44:3000
       - JWT_SECRET=shipit-dev-secret-change-me
       - ADMIN_USER=admin
-      - ADMIN_PASSWORD=shipit
+      - ADMIN_PASSWORD=REDACTED
       - WEBHOOK_SECRET=gitea-webhook-secret
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
