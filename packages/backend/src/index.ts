@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import http from 'http';
+import * as http from 'http';
 import { config } from './config.js';
 import { initDb } from './db/schema.js';
 import { setupWebSocket } from './ws/logs.js';
