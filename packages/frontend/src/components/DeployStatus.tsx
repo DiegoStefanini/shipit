@@ -8,6 +8,7 @@ const statusLabels: Record<string, string> = {
   success: 'Success',
   failed: 'Failed',
   running: 'Running',
+  stopped: 'Stopped',
   idle: 'Idle',
 }
 

@@ -40,6 +40,7 @@ export default function Dashboard() {
     running: projects.filter((p) => p.status === 'running').length,
     failed: projects.filter((p) => p.status === 'failed').length,
     building: projects.filter((p) => p.status === 'building').length,
+    stopped: projects.filter((p) => p.status === 'stopped').length,
   }
 
   return (
@@ -72,6 +73,10 @@ export default function Dashboard() {
           <div className="stat">
             <span className="stat-value stat-building">{stats.building}</span>
             <span className="stat-label">Building</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value stat-stopped">{stats.stopped}</span>
+            <span className="stat-label">Stopped</span>
           </div>
         </div>
       )}

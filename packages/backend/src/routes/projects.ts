@@ -163,6 +163,47 @@ router.post('/:id/deploy', (req: Request, res: Response) => {
   res.json({ message: 'Deploy queued' });
 });
 
+// POST /api/projects/:id/stop
+router.post('/:id/stop', async (req: Request, res: Response) => {
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' });
+    return;
+  }
+
+  if (!project.container_id) {
+    res.status(400).json({ error: 'No container running' });
+    return;
+  }
+
+  try {
+    await stopAndRemove(project.container_id as string);
+  } catch {
+    // Ignore
+  }
+
+  db.prepare('UPDATE projects SET status = ?, container_id = NULL, updated_at = ? WHERE id = ?').run('stopped', Date.now(), paramId(req));
+  const updated = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));
+  res.json(updated);
+});
+
+// POST /api/projects/:id/start
+router.post('/:id/start', (req: Request, res: Response) => {
+  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
+  if (!project) {
+    res.status(404).json({ error: 'Project not found' });
+    return;
+  }
+
+  if (project.status !== 'stopped') {
+    res.status(400).json({ error: 'Project is not stopped' });
+    return;
+  }
+
+  enqueueBuild(paramId(req));
+  res.json({ message: 'Rebuild queued — project will be back online shortly' });
+});
+
 // GET /api/projects/:id/deploys
 router.get('/:id/deploys', (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));

@@ -18,6 +18,7 @@ export default function ProjectDetail() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deploying, setDeploying] = useState(false)
+  const [toggling, setToggling] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
   const [expandedDeploy, setExpandedDeploy] = useState<string | null>(null)
 
@@ -72,6 +73,26 @@ export default function ProjectDetail() {
     }
   }
 
+  const isStopped = project?.status === 'stopped'
+
+  const handleToggleOnline = async () => {
+    setToggling(true)
+    try {
+      const endpoint = isStopped ? 'start' : 'stop'
+      const res = await apiFetch(`/api/projects/${id}/${endpoint}`, { method: 'POST' })
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || `Failed to ${endpoint} project`)
+      }
+      toast(isStopped ? 'Rebuild queued' : 'Project stopped', 'success')
+      fetchProject()
+    } catch (e: any) {
+      toast(e.message, 'error')
+    } finally {
+      setToggling(false)
+    }
+  }
+
   const toggleDeploy = (deployId: string) => {
     setExpandedDeploy(expandedDeploy === deployId ? null : deployId)
   }
@@ -103,7 +124,14 @@ export default function ProjectDetail() {
           <Link to={`/projects/${id}/settings`} className="btn">
             Settings
           </Link>
-          <button className="btn btn-primary" onClick={handleDeploy} disabled={deploying}>
+          <button
+            className={isStopped ? 'btn btn-primary' : 'btn btn-warning'}
+            onClick={handleToggleOnline}
+            disabled={toggling || project.status === 'building'}
+          >
+            {toggling ? (isStopped ? 'Starting...' : 'Stopping...') : (isStopped ? 'Start' : 'Stop')}
+          </button>
+          <button className="btn btn-primary" onClick={handleDeploy} disabled={deploying || isStopped}>
             {deploying ? 'Deploying...' : 'Deploy'}
           </button>
           <button className="btn btn-danger" onClick={() => setShowConfirm(true)}>

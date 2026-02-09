@@ -112,6 +112,17 @@ a {
   border-color: var(--primary-hover);
 }
 
+.btn-warning {
+  background: transparent;
+  border-color: var(--warning);
+  color: var(--warning);
+}
+
+.btn-warning:hover:not(:disabled) {
+  background: var(--warning);
+  color: #000;
+}
+
 .btn-danger {
   background: transparent;
   border-color: var(--error);
@@ -297,6 +308,10 @@ label {
   color: var(--blue);
 }
 
+.stat-stopped {
+  color: var(--warning);
+}
+
 /* Detail page */
 .detail-header {
   display: flex;
@@ -356,6 +371,11 @@ label {
 .deploy-badge-failed {
   background: #ef444422;
   color: #ef4444;
+}
+
+.deploy-badge-stopped {
+  background: #f59e0b22;
+  color: #f59e0b;
 }
 
 .deploy-badge-idle {
