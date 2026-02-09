@@ -9,4 +9,6 @@ export const config = {
   adminUser: process.env.ADMIN_USER ?? 'admin',
   adminPassword: process.env.ADMIN_PASSWORD ?? 'shipit',
   webhookSecret: process.env.WEBHOOK_SECRET ?? 'gitea-webhook-secret',
+  giteaToken: process.env.GITEA_TOKEN ?? '',
+  externalUrl: process.env.EXTERNAL_URL ?? 'https://deploy.stefaniniserver.com',
 };

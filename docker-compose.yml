@@ -25,6 +25,8 @@ services:
       - ADMIN_USER=admin
       - ADMIN_PASSWORD=REDACTED
       - WEBHOOK_SECRET=gitea-webhook-secret
+      - GITEA_TOKEN=${GITEA_TOKEN}
+      - EXTERNAL_URL=https://deploy.stefaniniserver.com
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - shipit-data:/data

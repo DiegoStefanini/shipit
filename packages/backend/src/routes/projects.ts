@@ -1,7 +1,30 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
+import { config } from '../config.js';
 import { enqueueBuild } from '../engine/builder.js';
 import { stopAndRemove } from '../engine/docker.js';
+
+async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
+  if (!config.giteaToken) return;
+  const hookUrl = `${config.externalUrl}/api/webhooks/gitea?secret=${config.webhookSecret}`;
+  try {
+    await fetch(`${giteaUrl}/api/v1/repos/${repo}/hooks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `token ${config.giteaToken}`,
+      },
+      body: JSON.stringify({
+        type: 'gitea',
+        config: { url: hookUrl, content_type: 'json', secret: config.webhookSecret },
+        events: ['push'],
+        active: true,
+      }),
+    });
+  } catch (err) {
+    console.error('Failed to create Gitea webhook:', err);
+  }
+}
 
 const router = Router();
 
@@ -50,6 +73,7 @@ router.post('/', (req: Request, res: Response) => {
   }
 
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(id);
+  createGiteaWebhook(gitea_url, gitea_repo);
   res.status(201).json(project);
 });
 
