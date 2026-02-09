@@ -1,15 +1,10 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import ProjectCard from '../components/ProjectCard'
+import { ProjectCardSkeleton } from '../components/Skeleton'
+import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
-
-interface Project {
-  id: string
-  name: string
-  gitea_repo: string
-  status: string
-  updated_at: number
-}
+import type { Project } from '../types'
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<Project[]>([])
@@ -17,7 +12,7 @@ export default function Dashboard() {
   const [error, setError] = useState('')
   const [search, setSearch] = useState('')
 
-  useEffect(() => {
+  const fetchProjects = useCallback(() => {
     apiFetch('/api/projects')
       .then((r) => {
         if (!r.ok) throw new Error('Failed to fetch projects')
@@ -28,14 +23,24 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
+  useEffect(() => {
+    fetchProjects()
+  }, [fetchProjects])
+
+  usePolling(fetchProjects, 30_000)
+
   const filtered = projects.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.gitea_repo.toLowerCase().includes(search.toLowerCase())
   )
 
-  if (loading) return <div className="loading">Loading projects...</div>
-  if (error) return <div className="error-msg">{error}</div>
+  const stats = {
+    total: projects.length,
+    running: projects.filter((p) => p.status === 'running').length,
+    failed: projects.filter((p) => p.status === 'failed').length,
+    building: projects.filter((p) => p.status === 'building').length,
+  }
 
   return (
     <div>
@@ -49,13 +54,44 @@ export default function Dashboard() {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
-      {filtered.length === 0 ? (
+
+      {!loading && projects.length > 0 && (
+        <div className="stats-bar">
+          <div className="stat">
+            <span className="stat-value">{stats.total}</span>
+            <span className="stat-label">Total</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value stat-running">{stats.running}</span>
+            <span className="stat-label">Running</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value stat-failed">{stats.failed}</span>
+            <span className="stat-label">Failed</span>
+          </div>
+          <div className="stat">
+            <span className="stat-value stat-building">{stats.building}</span>
+            <span className="stat-label">Building</span>
+          </div>
+        </div>
+      )}
+
+      {loading ? (
+        <div className="project-grid">
+          {[1, 2, 3].map((i) => (
+            <ProjectCardSkeleton key={i} />
+          ))}
+        </div>
+      ) : error ? (
+        <div className="error-msg">{error}</div>
+      ) : filtered.length === 0 ? (
         <div className="empty-state">
+          <div className="empty-state-icon">&#9650;</div>
           <h2>No projects found</h2>
           <p>
             {projects.length === 0 ? (
               <>
-                Get started by <Link to="/new" style={{ color: '#10b981' }}>creating your first project</Link>.
+                Get started by <Link to="/new" className="link-primary">creating your first project</Link>.
               </>
             ) : (
               'No projects match your search.'

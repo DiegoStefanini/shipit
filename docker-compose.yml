@@ -20,20 +20,21 @@ services:
       - PORT=3001
       - DATA_DIR=/data
       - DOCKER_NETWORK=shipit-net
-      - GITEA_URL=http://192.168.1.44:3000
-      - JWT_SECRET=shipit-dev-secret-change-me
-      - ADMIN_USER=admin
-      - ADMIN_PASSWORD=REDACTED
-      - WEBHOOK_SECRET=gitea-webhook-secret
+      - GITEA_URL=${GITEA_URL:-http://192.168.1.44:3000}
+      - JWT_SECRET=${JWT_SECRET}
+      - ADMIN_USER=${ADMIN_USER:-admin}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD}
+      - WEBHOOK_SECRET=${WEBHOOK_SECRET:-gitea-webhook-secret}
       - GITEA_TOKEN=${GITEA_TOKEN}
-      - EXTERNAL_URL=https://deploy.stefaniniserver.com
+      - BASE_DOMAIN=${BASE_DOMAIN:-stefaniniserver.com}
+      - DASHBOARD_DOMAIN=${DASHBOARD_DOMAIN:-deploy.stefaniniserver.com}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - shipit-data:/data
       - /tmp/shipit-builds:/tmp/shipit-builds
     labels:
       - traefik.enable=true
-      - traefik.http.routers.shipit-api.rule=Host(`deploy.stefaniniserver.com`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))
+      - traefik.http.routers.shipit-api.rule=Host(`${DASHBOARD_DOMAIN:-deploy.stefaniniserver.com}`) && (PathPrefix(`/api`) || PathPrefix(`/ws`))
       - traefik.http.routers.shipit-api.priority=10
       - traefik.http.services.shipit-api.loadbalancer.server.port=3001
     networks:
@@ -46,7 +47,7 @@ services:
     build: ./packages/frontend
     labels:
       - traefik.enable=true
-      - traefik.http.routers.shipit-ui.rule=Host(`deploy.stefaniniserver.com`)
+      - traefik.http.routers.shipit-ui.rule=Host(`${DASHBOARD_DOMAIN:-deploy.stefaniniserver.com}`)
       - traefik.http.routers.shipit-ui.priority=1
       - traefik.http.services.shipit-ui.loadbalancer.server.port=80
     networks:

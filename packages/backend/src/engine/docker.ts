@@ -12,7 +12,7 @@ export async function buildImage(
     { t: tag },
   );
 
-  return new Promise((resolve, reject) => {
+  const buildPromise = new Promise<string>((resolve, reject) => {
     docker.modem.followProgress(
       stream,
       (err: Error | null, output: Array<{ aux?: { ID?: string } }>) => {
@@ -29,6 +29,12 @@ export async function buildImage(
       },
     );
   });
+
+  const timeout = new Promise<never>((_, reject) =>
+    setTimeout(() => reject(new Error('Build timed out after 10 minutes')), 10 * 60 * 1000),
+  );
+
+  return Promise.race([buildPromise, timeout]);
 }
 
 export async function runContainer(

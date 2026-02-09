@@ -17,7 +17,14 @@ export default function LogViewer({ deployId, status, log }: LogViewerProps) {
     const ws = new WebSocket(`${protocol}//${window.location.host}/ws/logs/${deployId}`)
 
     ws.onmessage = (e) => {
-      setLines((prev) => [...prev, e.data])
+      let line = e.data
+      try {
+        const parsed = JSON.parse(e.data)
+        if (parsed.line) line = parsed.line
+      } catch {
+        // Use raw data
+      }
+      setLines((prev) => [...prev, line])
     }
 
     ws.onerror = () => {
@@ -36,25 +43,9 @@ export default function LogViewer({ deployId, status, log }: LogViewerProps) {
   }, [lines])
 
   return (
-    <div
-      ref={containerRef}
-      style={{
-        background: '#000',
-        border: '1px solid #262626',
-        borderRadius: '8px',
-        padding: '16px',
-        fontFamily: '"Fira Code", "Cascadia Code", "Consolas", monospace',
-        fontSize: '13px',
-        lineHeight: '1.7',
-        color: '#10b981',
-        maxHeight: '400px',
-        overflowY: 'auto',
-        whiteSpace: 'pre-wrap',
-        wordBreak: 'break-all',
-      }}
-    >
+    <div ref={containerRef} className="log-viewer">
       {lines.length === 0 ? (
-        <span style={{ color: '#a1a1aa' }}>Waiting for logs...</span>
+        <span className="text-muted">Waiting for logs...</span>
       ) : (
         lines.map((line, i) => <div key={i}>{line}</div>)
       )}

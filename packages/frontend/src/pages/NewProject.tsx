@@ -1,16 +1,23 @@
-import { useState, type FormEvent } from 'react'
+import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
+import { getConfig } from '../config'
 
 export default function NewProject() {
   const navigate = useNavigate()
   const [name, setName] = useState('')
   const [giteaRepo, setGiteaRepo] = useState('')
-  const [giteaUrl, setGiteaUrl] = useState('http://192.168.1.44:3000')
+  const [giteaUrl, setGiteaUrl] = useState('')
   const [branch, setBranch] = useState('main')
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
+  useEffect(() => {
+    const { giteaUrl: defaultUrl } = getConfig()
+    setGiteaUrl(defaultUrl)
+  }, [])
+
+  const { baseDomain } = getConfig()
   const nameRegex = /^[a-z0-9]([a-z0-9-]*[a-z0-9])?$/
   const nameError = name && !nameRegex.test(name) ? 'Only lowercase letters, numbers, and hyphens allowed' : ''
 
@@ -41,8 +48,8 @@ export default function NewProject() {
   }
 
   return (
-    <div style={{ maxWidth: 520 }}>
-      <h1 style={{ fontSize: 24, fontWeight: 600, marginBottom: 24 }}>New Project</h1>
+    <div className="form-container">
+      <h1 className="form-title">New Project</h1>
       {error && <div className="error-msg">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="form-group">
@@ -55,7 +62,7 @@ export default function NewProject() {
             required
           />
           {nameError && <div className="form-error">{nameError}</div>}
-          <div className="form-hint">Becomes the subdomain: {name || 'my-app'}.stefaniniserver.com</div>
+          <div className="form-hint">Becomes the subdomain: {name || 'my-app'}.{baseDomain}</div>
         </div>
         <div className="form-group">
           <label>Gitea Repository</label>

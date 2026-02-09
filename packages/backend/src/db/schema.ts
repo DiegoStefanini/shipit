@@ -26,5 +26,7 @@ export function initDb(): void {
       finished_at INTEGER,
       image_id TEXT
     );
+    CREATE INDEX IF NOT EXISTS idx_deploys_project_id ON deploys(project_id);
+    CREATE INDEX IF NOT EXISTS idx_projects_gitea_repo ON projects(gitea_repo);
   `);
 }

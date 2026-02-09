@@ -6,7 +6,7 @@ import { stopAndRemove } from '../engine/docker.js';
 
 async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
   if (!config.giteaToken) return;
-  const hookUrl = `${config.externalUrl}/api/webhooks/gitea?secret=${config.webhookSecret}`;
+  const hookUrl = `https://${config.dashboardDomain}/api/webhooks/gitea`;
   try {
     await fetch(`${giteaUrl}/api/v1/repos/${repo}/hooks`, {
       method: 'POST',

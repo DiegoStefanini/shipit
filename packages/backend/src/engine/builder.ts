@@ -8,6 +8,8 @@ import { generateDockerfile, portForLanguage } from './dockerfiles.js';
 import { buildImage, runContainer, stopAndRemove, pruneOldImages } from './docker.js';
 import { emitLog } from '../ws/logs.js';
 
+const SAFE_REF = /^[a-zA-Z0-9._\-\/]+$/;
+
 interface QueueItem {
   projectId: string;
 }
@@ -46,6 +48,13 @@ async function runBuild(projectId: string): Promise<void> {
   const giteaUrl = project.gitea_url as string;
   const giteaRepo = project.gitea_repo as string;
   const branch = project.branch as string;
+
+  if (!SAFE_REF.test(branch)) {
+    throw new Error(`Invalid branch name: ${branch}`);
+  }
+  if (!SAFE_REF.test(giteaRepo)) {
+    throw new Error(`Invalid repository name: ${giteaRepo}`);
+  }
 
   // Create deploy record
   const deployId = crypto.randomUUID();
@@ -116,7 +125,7 @@ async function runBuild(projectId: string): Promise<void> {
     const containerName = `shipit-${name}`;
     const labels: Record<string, string> = {
       'traefik.enable': 'true',
-      [`traefik.http.routers.app-${name}.rule`]: `Host(\`${name}.stefaniniserver.com\`)`,
+      [`traefik.http.routers.app-${name}.rule`]: `Host(\`${name}.${config.baseDomain}\`)`,
       [`traefik.http.services.app-${name}.loadbalancer.server.port`]: String(port),
       'traefik.docker.network': config.dockerNetwork,
       'shipit.project': name,

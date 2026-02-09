@@ -3,7 +3,9 @@ import { useEffect, useState } from 'react'
 import Dashboard from './pages/Dashboard'
 import NewProject from './pages/NewProject'
 import ProjectDetail from './pages/ProjectDetail'
+import ProjectSettings from './pages/ProjectSettings'
 import Login from './pages/Login'
+import { ToastProvider } from './components/Toast'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('shipit_token')
@@ -39,31 +41,34 @@ export default function App() {
   }
 
   return (
-    <div className="app">
-      {token && (
-        <header className="navbar">
-          <Link to="/" className="navbar-logo">
-            <span className="logo-icon">&#9650;</span> ShipIt
-          </Link>
-          <div className="navbar-right">
-            {username && <span className="navbar-user">{username}</span>}
-            <Link to="/new" className="btn btn-primary">
-              + New Project
+    <ToastProvider>
+      <div className="app">
+        {token && (
+          <header className="navbar">
+            <Link to="/" className="navbar-logo">
+              <span className="logo-icon">&#9650;</span> ShipIt
             </Link>
-            <button className="btn" onClick={handleLogout}>
-              Logout
-            </button>
-          </div>
-        </header>
-      )}
-      <main className={token ? 'main-content' : ''}>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-          <Route path="/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
-          <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-        </Routes>
-      </main>
-    </div>
+            <div className="navbar-right">
+              {username && <span className="navbar-user">{username}</span>}
+              <Link to="/new" className="btn btn-primary">
+                + New Project
+              </Link>
+              <button className="btn" onClick={handleLogout}>
+                Logout
+              </button>
+            </div>
+          </header>
+        )}
+        <main className={token ? 'main-content' : ''}>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
+            <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+            <Route path="/projects/:id/settings" element={<ProtectedRoute><ProjectSettings /></ProtectedRoute>} />
+          </Routes>
+        </main>
+      </div>
+    </ToastProvider>
   )
 }
