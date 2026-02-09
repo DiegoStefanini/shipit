@@ -8,7 +8,7 @@ const router = Router();
 const NAME_REGEX = /^[a-z0-9][a-z0-9-]*[a-z0-9]$|^[a-z0-9]$/;
 
 function paramId(req: Request): string {
-  const id = paramId(req);
+  const id = req.params.id;
   return Array.isArray(id) ? id[0] : id;
 }
 
