@@ -18,13 +18,13 @@ interface Project {
   gitea_url: string
   branch: string
   status: string
-  deploys: Deploy[]
 }
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [project, setProject] = useState<Project | null>(null)
+  const [deploys, setDeploys] = useState<Deploy[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deploying, setDeploying] = useState(false)
@@ -32,12 +32,20 @@ export default function ProjectDetail() {
   const [expandedDeploy, setExpandedDeploy] = useState<string | null>(null)
 
   const fetchProject = () => {
-    apiFetch(`/api/projects/${id}`)
-      .then((r) => {
+    Promise.all([
+      apiFetch(`/api/projects/${id}`).then((r) => {
         if (!r.ok) throw new Error('Project not found')
         return r.json()
+      }),
+      apiFetch(`/api/projects/${id}/deploys`).then((r) => {
+        if (!r.ok) return []
+        return r.json()
+      }),
+    ])
+      .then(([proj, deps]) => {
+        setProject(proj)
+        setDeploys(deps)
       })
-      .then(setProject)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
   }
@@ -102,13 +110,13 @@ export default function ProjectDetail() {
       </div>
 
       <h2 className="section-title">Deploys</h2>
-      {project.deploys.length === 0 ? (
+      {deploys.length === 0 ? (
         <div className="empty-state">
           <p>No deploys yet. Click Deploy to get started.</p>
         </div>
       ) : (
         <div className="deploy-list">
-          {project.deploys.map((d) => (
+          {deploys.map((d) => (
             <div key={d.id} className="deploy-item">
               <div
                 className="deploy-item-header"
