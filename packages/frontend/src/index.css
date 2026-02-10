@@ -292,6 +292,15 @@ a { color: inherit; text-decoration: none; }
   border-color: var(--red);
 }
 
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 11px;
+}
+
+.btn-icon {
+  padding: 6px 8px;
+}
+
 /* ================================================================
    Inputs
    ================================================================ */
@@ -316,7 +325,15 @@ input:focus, select:focus, textarea:focus {
   border-color: var(--primary);
   box-shadow: 0 0 0 3px var(--primary-glow), 0 0 16px rgba(249,115,22,.08);
 }
-select { cursor: pointer; }
+select {
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M3 4.5L6 7.5L9 4.5' fill='none' stroke='%2394a3b8' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 32px;
+}
 
 label {
   display: block;
@@ -598,11 +615,98 @@ label {
 /* ================================================================
    Forms
    ================================================================ */
-.form-container { max-width: 520px; }
-.form-title { font-size: 22px; font-weight: 700; margin-bottom: 24px; letter-spacing: -.02em; }
-.form-group { margin-bottom: 16px; }
-.form-hint { font-size: 11px; color: var(--text-dim); margin-top: 4px; }
-.form-error { font-size: 11px; color: var(--red); margin-top: 4px; }
+.form-container { max-width: 560px; }
+.form-title {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  letter-spacing: -.02em;
+}
+.form-group { margin-bottom: 20px; }
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.form-hint {
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 6px;
+  padding-left: 1px;
+  line-height: 1.4;
+}
+.form-error {
+  font-size: 11px;
+  color: var(--red);
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.form-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+/* Checkbox group & toggle switches */
+.checkbox-group {
+  display: flex;
+  gap: 20px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,.02);
+  border: 1px solid var(--border);
+  border-radius: var(--r-md);
+  margin-bottom: 20px;
+}
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: none;
+  letter-spacing: 0;
+  margin-bottom: 0;
+  user-select: none;
+  transition: color var(--t-fast);
+}
+.toggle-label:hover { color: var(--text); }
+.toggle-label input[type="checkbox"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 36px;
+  height: 20px;
+  background: rgba(100,116,139,.2);
+  border: 1px solid var(--border-light);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  position: relative;
+  transition: all var(--t-base) var(--ease);
+  flex-shrink: 0;
+}
+.toggle-label input[type="checkbox"]::after {
+  content: "";
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: var(--text-dim);
+  border-radius: 50%;
+  transition: all var(--t-base) var(--ease);
+}
+.toggle-label input[type="checkbox"]:checked {
+  background: var(--primary);
+  border-color: var(--primary);
+  box-shadow: 0 0 12px rgba(249,115,22,.25);
+}
+.toggle-label input[type="checkbox"]:checked::after {
+  left: 18px;
+  background: #fff;
+}
 
 /* ================================================================
    Empty state
@@ -834,22 +938,62 @@ label {
 /* ================================================================
    Settings
    ================================================================ */
-.settings-page { max-width: 600px; }
+.settings-page { max-width: 620px; }
 .settings-page h1 { font-size: 22px; font-weight: 700; margin-bottom: 28px; letter-spacing: -.02em; }
 .settings-section {
-  margin-bottom: 20px;
-  padding: 20px;
-  background: var(--card);
+  margin-bottom: 24px;
+  padding: 24px;
+  background: linear-gradient(160deg, rgba(15,22,41,.6), rgba(12,18,32,.4));
   border: 1px solid var(--border);
   border-radius: var(--r-lg);
+  position: relative;
 }
-.settings-section h2 { font-size: 14px; font-weight: 600; margin-bottom: 16px; }
-.env-row { display: flex; gap: 8px; margin-bottom: 8px; align-items: center; }
+.settings-section h2 {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 20px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+}
+.env-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  align-items: center;
+  padding: 4px;
+  border-radius: var(--r-sm);
+  transition: background var(--t-fast);
+}
+.env-row:hover { background: rgba(255,255,255,.02); }
 .env-row input { flex: 1; }
-.password-input { -webkit-text-security: disc; }
-.danger-zone { border-color: rgba(239,68,68,.2); }
-.danger-zone h2 { color: var(--red); }
-.danger-zone p { color: var(--text-secondary); font-size: 13px; margin-bottom: 16px; }
+.env-row input:first-child {
+  font-family: "JetBrains Mono", monospace;
+  font-size: 12px;
+  text-transform: uppercase;
+  max-width: 180px;
+}
+.password-input {
+  -webkit-text-security: disc;
+  font-family: "JetBrains Mono", monospace;
+  letter-spacing: .06em;
+}
+.danger-zone {
+  border-color: rgba(239,68,68,.15);
+  background: linear-gradient(160deg, rgba(239,68,68,.04), rgba(12,18,32,.4));
+}
+.danger-zone h2 {
+  color: var(--red);
+  border-bottom-color: rgba(239,68,68,.15);
+}
+.danger-zone p {
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
 
 /* ================================================================
    Status indicator
@@ -1324,6 +1468,10 @@ label {
   gap: 8px;
   font-size: 13px;
   cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 500;
+  margin-bottom: 0;
 }
 .alerts-channel-option input[type="checkbox"] { width: auto; }
 .alerts-list { display: flex; flex-direction: column; gap: 6px; }
@@ -1435,6 +1583,9 @@ label {
   .stats-bar { flex-wrap: wrap; }
   .stat { padding: 10px 8px; }
   .env-row { flex-direction: column; }
+  .env-row input:first-child { max-width: none; }
+  .form-row { grid-template-columns: 1fr; }
+  .checkbox-group { flex-direction: column; gap: 12px; }
   .navbar-user { display: none; }
   .metrics-grid { grid-template-columns: 1fr; }
   .log-line { font-size: 10px; gap: 4px; padding: 3px 8px; }

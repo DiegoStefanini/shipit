@@ -381,12 +381,12 @@ export default function Alerts() {
                     {!ch.enabled && <span className="alerts-disabled-badge">Disabled</span>}
                   </div>
                   <div className="alerts-list-item-actions">
-                    <button className="btn" onClick={() => handleTestChannel(ch.id)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>Test</button>
-                    <button className="btn" onClick={() => handleToggleChannel(ch)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
+                    <button className="btn btn-sm" onClick={() => handleTestChannel(ch.id)}>Test</button>
+                    <button className="btn btn-sm" onClick={() => handleToggleChannel(ch)}>
                       {ch.enabled ? 'Disable' : 'Enable'}
                     </button>
-                    <button className="btn" onClick={() => handleEditChannel(ch)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>Edit</button>
-                    <button className="btn btn-danger" onClick={() => handleDeleteChannel(ch.id)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>Delete</button>
+                    <button className="btn btn-sm" onClick={() => handleEditChannel(ch)}>Edit</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteChannel(ch.id)}>Delete</button>
                   </div>
                 </div>
               ))
@@ -484,11 +484,11 @@ export default function Alerts() {
                     )}
                   </div>
                   <div className="alerts-list-item-actions">
-                    <button className="btn" onClick={() => handleToggleRule(rule)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>
+                    <button className="btn btn-sm" onClick={() => handleToggleRule(rule)}>
                       {rule.enabled ? 'Disable' : 'Enable'}
                     </button>
-                    <button className="btn" onClick={() => handleEditRule(rule)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>Edit</button>
-                    <button className="btn btn-danger" onClick={() => handleDeleteRule(rule.id)} style={{ fontSize: '0.8rem', padding: '4px 10px' }}>Delete</button>
+                    <button className="btn btn-sm" onClick={() => handleEditRule(rule)}>Edit</button>
+                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteRule(rule.id)}>Delete</button>
                   </div>
                 </div>
               ))

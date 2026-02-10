@@ -195,8 +195,8 @@ export default function Hosts() {
                 placeholder="/home/shipit/.ssh/id_ed25519"
               />
             </div>
-            <div className="form-group" style={{ display: 'flex', gap: 24 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <div className="checkbox-group">
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={form.has_docker}
@@ -204,7 +204,7 @@ export default function Hosts() {
                 />
                 Has Docker
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={form.has_crowdsec}

@@ -277,8 +277,8 @@ export default function HostDetail() {
                 onChange={(e) => setEditForm({ ...editForm, ssh_key_path: e.target.value })}
               />
             </div>
-            <div className="form-group" style={{ display: 'flex', gap: 24 }}>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+            <div className="checkbox-group">
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={editForm.has_docker}
@@ -286,7 +286,7 @@ export default function HostDetail() {
                 />
                 Has Docker
               </label>
-              <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <label className="toggle-label">
                 <input
                   type="checkbox"
                   checked={editForm.has_crowdsec}

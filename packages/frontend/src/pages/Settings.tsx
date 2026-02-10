@@ -99,7 +99,7 @@ export default function Settings() {
               style={{ WebkitTextSecurity: 'disc' } as React.CSSProperties}
             />
           </div>
-          <div style={{ display: 'flex', gap: 8 }}>
+          <div className="form-actions">
             <button type="submit" className="btn btn-primary" disabled={saving}>
               {saving ? 'Saving...' : 'Save'}
             </button>
