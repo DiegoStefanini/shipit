@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
 import { config } from '../config.js';
 import { enqueueBuild } from '../engine/builder.js';
-import { stopAndRemove } from '../engine/docker.js';
+import { exec } from '../services/ssh.js';
 
 async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
   if (!config.giteaToken) return;
@@ -138,15 +138,17 @@ router.delete('/:id', async (req: Request, res: Response) => {
     return;
   }
 
-  // Stop container if running
-  if (project.container_id) {
+  const hostId = project.host_id as string | null;
+  const containerName = `shipit-${project.name as string}`;
+  if (hostId) {
     try {
-      await stopAndRemove(project.container_id as string);
+      await exec(hostId, `docker stop ${containerName} 2>/dev/null; docker rm ${containerName} 2>/dev/null; true`);
     } catch {
-      // Ignore
+      // Ignore SSH errors during delete
     }
   }
 
+  db.prepare('DELETE FROM deploys WHERE project_id = ?').run(paramId(req));
   db.prepare('DELETE FROM projects WHERE id = ?').run(paramId(req));
   res.status(204).end();
 });
@@ -171,15 +173,19 @@ router.post('/:id/stop', async (req: Request, res: Response) => {
     return;
   }
 
-  if (!project.container_id) {
-    res.status(400).json({ error: 'No container running' });
+  if (project.status !== 'running') {
+    res.status(400).json({ error: 'Project is not running' });
     return;
   }
 
-  try {
-    await stopAndRemove(project.container_id as string);
-  } catch {
-    // Ignore
+  const hostId = project.host_id as string | null;
+  const containerName = `shipit-${project.name as string}`;
+  if (hostId) {
+    try {
+      await exec(hostId, `docker stop ${containerName} 2>/dev/null; true`);
+    } catch {
+      // Ignore SSH errors during stop
+    }
   }
 
   db.prepare('UPDATE projects SET status = ?, container_id = NULL, updated_at = ? WHERE id = ?').run('stopped', Date.now(), paramId(req));

@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
 import { useToast } from '../components/Toast'
-import type { Project } from '../types'
+import type { Project, Host } from '../types'
 
 export default function ProjectSettings() {
   const { id } = useParams<{ id: string }>()
@@ -10,19 +10,25 @@ export default function ProjectSettings() {
   const { toast } = useToast()
   const [project, setProject] = useState<Project | null>(null)
   const [branch, setBranch] = useState('')
+  const [hostId, setHostId] = useState('')
+  const [hosts, setHosts] = useState<Host[]>([])
   const [envVars, setEnvVars] = useState<Array<{ key: string; value: string }>>([])
   const [saving, setSaving] = useState(false)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    apiFetch(`/api/projects/${id}`)
-      .then((r) => {
+    Promise.all([
+      apiFetch(`/api/projects/${id}`).then((r) => {
         if (!r.ok) throw new Error('Project not found')
         return r.json()
-      })
-      .then((p: Project) => {
+      }),
+      apiFetch('/api/hosts').then((r) => (r.ok ? r.json() : [])),
+    ])
+      .then(([p, h]: [Project, Host[]]) => {
         setProject(p)
         setBranch(p.branch)
+        setHostId(p.host_id ?? '')
+        setHosts(h)
         try {
           const vars = JSON.parse(p.env_vars ?? '{}')
           setEnvVars(Object.entries(vars).map(([key, value]) => ({ key, value: value as string })))
@@ -45,7 +51,7 @@ export default function ProjectSettings() {
       const res = await apiFetch(`/api/projects/${id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ branch, env_vars: envObj }),
+        body: JSON.stringify({ branch, env_vars: envObj, host_id: hostId || null }),
       })
       if (!res.ok) throw new Error('Failed to save')
       toast('Settings saved', 'success')
@@ -81,6 +87,17 @@ export default function ProjectSettings() {
               value={branch}
               onChange={(e) => setBranch(e.target.value)}
             />
+          </div>
+          <div className="form-group">
+            <label>Target Host</label>
+            <select value={hostId} onChange={(e) => setHostId(e.target.value)}>
+              <option value="">No host selected</option>
+              {hosts.map((h) => (
+                <option key={h.id} value={h.id}>
+                  {h.name} ({h.ip_address})
+                </option>
+              ))}
+            </select>
           </div>
         </section>
 

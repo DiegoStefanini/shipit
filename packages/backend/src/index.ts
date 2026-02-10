@@ -7,7 +7,18 @@ import { setupWebSocket } from './ws/logs.js';
 import projectsRouter from './routes/projects.js';
 import webhooksRouter from './routes/webhooks.js';
 import authRouter from './routes/auth.js';
+import hostsRouter from './routes/hosts.js';
+import settingsRouter from './routes/settings.js';
 import { authMiddleware } from './middleware/auth.js';
+import monitoringRouter from './routes/monitoring.js';
+import { startCollector, stopCollector } from './services/collector.js';
+import logsRouter from './routes/logs.js';
+import securityRouter from './routes/security.js';
+import { startLogCollector, stopLogCollector } from './services/log-collector.js';
+import { startCrowdSecCollector, stopCrowdSecCollector } from './services/crowdsec.js';
+import { disconnectAll } from './services/ssh.js';
+import alertsRouter from './routes/alerts.js';
+import { startAlertEvaluator, stopAlertEvaluator } from './services/alert-evaluator.js';
 import db from './db/connection.js';
 
 const app = express();
@@ -26,11 +37,21 @@ app.get('/api/config', (_req, res) => {
 app.use('/api/auth', authRouter);
 app.use('/api/projects', authMiddleware, projectsRouter);
 app.use('/api/webhooks', webhooksRouter);
+app.use('/api/hosts', authMiddleware, hostsRouter);
+app.use('/api/settings', authMiddleware, settingsRouter);
+app.use('/api/monitoring', authMiddleware, monitoringRouter);
+app.use('/api/logs', authMiddleware, logsRouter);
+app.use('/api/security', authMiddleware, securityRouter);
+app.use('/api/alerts', authMiddleware, alertsRouter);
 
 const server = http.createServer(app);
 setupWebSocket(server);
 
 initDb();
+startCollector();
+startLogCollector();
+startCrowdSecCollector();
+startAlertEvaluator();
 
 server.listen(config.port, () => {
   console.log(`ShipIt backend listening on port ${config.port}`);
@@ -38,6 +59,11 @@ server.listen(config.port, () => {
 
 function shutdown() {
   console.log('Shutting down gracefully...');
+  stopCollector();
+  stopLogCollector();
+  stopCrowdSecCollector();
+  stopAlertEvaluator();
+  disconnectAll();
   server.close(() => {
     db.close();
     process.exit(0);

@@ -1,10 +1,8 @@
 export const config = {
   port: parseInt(process.env.PORT ?? '3001'),
-  dataDir: process.env.DATA_DIR ?? '/data',
-  dockerNetwork: process.env.DOCKER_NETWORK ?? 'shipit-net',
+  dataDir: process.env.DATA_DIR ?? '/var/lib/shipit',
   giteaUrl: process.env.GITEA_URL ?? 'http://localhost:3000',
-  buildsDir: process.env.BUILDS_DIR ?? '/tmp/shipit-builds',
-  version: '0.1.0',
+  version: '0.2.0',
   jwtSecret: process.env.JWT_SECRET ?? 'change-me-in-production',
   adminUser: process.env.ADMIN_USER ?? 'admin',
   adminPassword: process.env.ADMIN_PASSWORD ?? 'changeme',
@@ -12,4 +10,6 @@ export const config = {
   giteaToken: process.env.GITEA_TOKEN ?? '',
   baseDomain: process.env.BASE_DOMAIN ?? 'localhost',
   dashboardDomain: process.env.DASHBOARD_DOMAIN ?? 'localhost',
+  selfRepo: process.env.SELF_REPO ?? '',
+  selfDeployEnabled: process.env.SELF_DEPLOY_ENABLED === 'true',
 };

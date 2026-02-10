@@ -7,7 +7,7 @@ import { usePolling } from '../hooks/usePolling'
 import { useToast } from '../components/Toast'
 import { getConfig } from '../config'
 import { timeAgo } from '../utils/time'
-import type { Project, Deploy } from '../types'
+import type { Project, Deploy, Host } from '../types'
 
 export default function ProjectDetail() {
   const { id } = useParams<{ id: string }>()
@@ -15,6 +15,7 @@ export default function ProjectDetail() {
   const { toast } = useToast()
   const [project, setProject] = useState<Project | null>(null)
   const [deploys, setDeploys] = useState<Deploy[]>([])
+  const [hosts, setHosts] = useState<Host[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [deploying, setDeploying] = useState(false)
@@ -32,10 +33,12 @@ export default function ProjectDetail() {
         if (!r.ok) return []
         return r.json()
       }),
+      apiFetch('/api/hosts').then((r) => (r.ok ? r.json() : [])),
     ])
-      .then(([proj, deps]) => {
+      .then(([proj, deps, h]) => {
         setProject(proj)
         setDeploys(deps)
+        setHosts(h)
       })
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false))
@@ -103,6 +106,7 @@ export default function ProjectDetail() {
 
   const { baseDomain } = getConfig()
   const liveUrl = `https://${project.name}.${baseDomain}`
+  const projectHost = hosts.find((h) => h.id === project.host_id)
 
   return (
     <div>
@@ -115,6 +119,11 @@ export default function ProjectDetail() {
             <span>{project.gitea_repo}</span>
             <span>Branch: {project.branch}</span>
             <DeployStatus status={project.status} />
+            {projectHost && (
+              <Link to={`/hosts/${projectHost.id}`} className="link-primary">
+                Host: {projectHost.name}
+              </Link>
+            )}
             <a href={liveUrl} target="_blank" rel="noopener noreferrer" className="link-primary">
               {liveUrl}
             </a>

@@ -10,10 +10,9 @@ jobs:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1
         with:
-          host: 192.168.1.44
-          username: diego
+          host: ${{ secrets.SHIPIT_HOST }}
+          username: shipit
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd ~/services/shipit
-            git pull origin main
-            docker compose up -d --build
+            cd /opt/shipit
+            bash deploy/self-deploy.sh

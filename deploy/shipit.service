@@ -1,0 +1,16 @@
+[Unit]
+Description=ShipIt API Server
+After=network.target
+
+[Service]
+Type=simple
+User=shipit
+WorkingDirectory=/opt/shipit
+ExecStart=/usr/bin/node packages/backend/dist/index.js
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/shipit/.env
+
+[Install]
+WantedBy=multi-user.target

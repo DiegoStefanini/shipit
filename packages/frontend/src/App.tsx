@@ -4,7 +4,14 @@ import Dashboard from './pages/Dashboard'
 import NewProject from './pages/NewProject'
 import ProjectDetail from './pages/ProjectDetail'
 import ProjectSettings from './pages/ProjectSettings'
+import Hosts from './pages/Hosts'
+import HostDetail from './pages/HostDetail'
+import Settings from './pages/Settings'
 import Login from './pages/Login'
+import Monitoring from './pages/Monitoring'
+import Security from './pages/Security'
+import Alerts from './pages/Alerts'
+import Logs from './pages/Logs'
 import { ToastProvider } from './components/Toast'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -48,10 +55,21 @@ export default function App() {
             <Link to="/" className="navbar-logo">
               <span className="logo-icon">&#9650;</span> ShipIt
             </Link>
+            <nav className="navbar-links">
+              <Link to="/" className="navbar-link">Projects</Link>
+              <Link to="/hosts" className="navbar-link">Hosts</Link>
+              <Link to="/monitoring" className="navbar-link">Monitoring</Link>
+              <Link to="/logs" className="navbar-link">Logs</Link>
+              <Link to="/security" className="navbar-link">Security</Link>
+              <Link to="/alerts" className="navbar-link">Alerts</Link>
+            </nav>
             <div className="navbar-right">
               {username && <span className="navbar-user">{username}</span>}
               <Link to="/new" className="btn btn-primary">
                 + New Project
+              </Link>
+              <Link to="/settings" className="btn">
+                Settings
               </Link>
               <button className="btn" onClick={handleLogout}>
                 Logout
@@ -66,6 +84,13 @@ export default function App() {
             <Route path="/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
             <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
             <Route path="/projects/:id/settings" element={<ProtectedRoute><ProjectSettings /></ProtectedRoute>} />
+            <Route path="/hosts" element={<ProtectedRoute><Hosts /></ProtectedRoute>} />
+            <Route path="/hosts/:id" element={<ProtectedRoute><HostDetail /></ProtectedRoute>} />
+            <Route path="/monitoring" element={<ProtectedRoute><Monitoring /></ProtectedRoute>} />
+            <Route path="/logs" element={<ProtectedRoute><Logs /></ProtectedRoute>} />
+            <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+            <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
           </Routes>
         </main>
       </div>

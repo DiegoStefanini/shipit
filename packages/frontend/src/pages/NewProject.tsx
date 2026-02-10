@@ -2,6 +2,7 @@ import { useState, useEffect, type FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { apiFetch } from '../api'
 import { getConfig } from '../config'
+import type { Host } from '../types'
 
 export default function NewProject() {
   const navigate = useNavigate()
@@ -9,12 +10,18 @@ export default function NewProject() {
   const [giteaRepo, setGiteaRepo] = useState('')
   const [giteaUrl, setGiteaUrl] = useState('')
   const [branch, setBranch] = useState('main')
+  const [hostId, setHostId] = useState('')
+  const [hosts, setHosts] = useState<Host[]>([])
   const [error, setError] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
   useEffect(() => {
     const { giteaUrl: defaultUrl } = getConfig()
     setGiteaUrl(defaultUrl)
+    apiFetch('/api/hosts')
+      .then((r) => (r.ok ? r.json() : []))
+      .then(setHosts)
+      .catch(() => {})
   }, [])
 
   const { baseDomain } = getConfig()
@@ -32,7 +39,7 @@ export default function NewProject() {
       const res = await apiFetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, gitea_repo: giteaRepo, gitea_url: giteaUrl, branch }),
+        body: JSON.stringify({ name, gitea_repo: giteaRepo, gitea_url: giteaUrl, branch, host_id: hostId }),
       })
       if (!res.ok) {
         const data = await res.json().catch(() => ({}))
@@ -90,6 +97,17 @@ export default function NewProject() {
             value={branch}
             onChange={(e) => setBranch(e.target.value)}
           />
+        </div>
+        <div className="form-group">
+          <label>Target Host</label>
+          <select value={hostId} onChange={(e) => setHostId(e.target.value)} required>
+            <option value="">Select a host...</option>
+            {hosts.map((h) => (
+              <option key={h.id} value={h.id}>
+                {h.name} ({h.ip_address})
+              </option>
+            ))}
+          </select>
         </div>
         <button type="submit" className="btn btn-primary" disabled={submitting || !!nameError}>
           {submitting ? 'Creating...' : 'Create Project'}

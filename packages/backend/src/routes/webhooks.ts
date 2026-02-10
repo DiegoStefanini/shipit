@@ -1,4 +1,6 @@
 import { Router, Request, Response } from 'express';
+import { exec } from 'node:child_process';
+import path from 'node:path';
 import db from '../db/connection.js';
 import { enqueueBuild } from '../engine/builder.js';
 import { config } from '../config.js';
@@ -50,6 +52,50 @@ router.post('/gitea', (req: Request, res: Response) => {
 
   enqueueBuild(project.id as string);
   res.json({ message: 'Deploy triggered', project: project.name });
+});
+
+// POST /api/webhooks/gitea — self-deploy handler
+// When the pushed repo matches config.selfRepo, trigger self-deploy
+router.post('/gitea/self-deploy', (req: Request, res: Response) => {
+  if (!config.selfDeployEnabled) {
+    res.status(403).json({ error: 'Self-deploy is disabled' });
+    return;
+  }
+
+  const secret = req.headers['x-gitea-secret'] as string | undefined ?? (req.query.secret as string | undefined);
+  if (secret !== config.webhookSecret) {
+    res.status(401).json({ error: 'Invalid webhook secret' });
+    return;
+  }
+
+  const payload = req.body as GiteaWebhookPayload;
+  const repoFullName = payload.repository?.full_name;
+
+  if (!repoFullName || repoFullName !== config.selfRepo) {
+    res.status(400).json({ error: `Repo mismatch: expected ${config.selfRepo}, got ${repoFullName}` });
+    return;
+  }
+
+  const ref = payload.ref ?? '';
+  if (ref && ref !== 'refs/heads/main') {
+    res.json({ message: `Ignored push to ${ref}, self-deploy tracks main` });
+    return;
+  }
+
+  const scriptPath = path.resolve('/opt/shipit/deploy/self-deploy.sh');
+  console.log(`[self-deploy] Triggered by push to ${repoFullName}, running ${scriptPath}`);
+
+  res.json({ message: 'Self-deploy triggered' });
+
+  exec(`bash ${scriptPath}`, { cwd: '/opt/shipit', timeout: 300_000 }, (error, stdout, stderr) => {
+    if (error) {
+      console.error(`[self-deploy] FAILED: ${error.message}`);
+      console.error(`[self-deploy] stderr: ${stderr}`);
+      return;
+    }
+    console.log(`[self-deploy] SUCCESS`);
+    if (stdout) console.log(`[self-deploy] stdout: ${stdout}`);
+  });
 });
 
 export default router;
