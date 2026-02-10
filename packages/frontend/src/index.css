@@ -137,10 +137,9 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: -.02em;
 }
 
-.logo-icon {
-  color: var(--primary);
-  font-size: 14px;
+.logo-svg {
   filter: drop-shadow(0 0 6px rgba(249,115,22,.4));
+  flex-shrink: 0;
 }
 
 .navbar-links { display: flex; align-items: center; gap: 1px; flex: 1; }
@@ -911,7 +910,9 @@ label {
   margin-bottom: 6px;
 }
 .login-header h1 { font-size: 24px; font-weight: 800; letter-spacing: -.03em; }
-.login-header .logo-icon { font-size: 20px; }
+.login-header .logo-svg {
+  filter: drop-shadow(0 0 14px rgba(249,115,22,.5));
+}
 .login-kicker {
   text-align: center;
   color: var(--text-dim);

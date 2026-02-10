@@ -67,7 +67,11 @@ export default function App() {
         {token && (
           <header className="navbar">
             <Link to="/" className="navbar-logo">
-              <span className="logo-icon">&#9650;</span> ShipIt
+              <svg className="logo-svg" viewBox="0 0 24 28" width="16" height="19" fill="none">
+                <path d="M12 1 L22 13 L17.5 13 L17.5 21.5 L20.5 26 L3.5 26 L6.5 21.5 L6.5 13 L2 13 Z" fill="#f97316"/>
+                <rect x="9" y="16" width="6" height="1.5" rx=".75" fill="#3b82f6" opacity=".55"/>
+              </svg>
+              ShipIt
             </Link>
             <button
               className="navbar-toggle"
