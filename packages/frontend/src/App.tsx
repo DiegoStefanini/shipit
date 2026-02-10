@@ -1,4 +1,4 @@
-import { Routes, Route, Link, Navigate, useNavigate } from 'react-router-dom'
+import { Routes, Route, Link, NavLink, Navigate, useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import Dashboard from './pages/Dashboard'
 import NewProject from './pages/NewProject'
@@ -23,6 +23,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export default function App() {
   const navigate = useNavigate()
   const [username, setUsername] = useState<string | null>(null)
+  const [menuOpen, setMenuOpen] = useState(false)
   const token = localStorage.getItem('shipit_token')
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export default function App() {
   const handleLogout = () => {
     localStorage.removeItem('shipit_token')
     setUsername(null)
+    setMenuOpen(false)
     navigate('/login')
   }
 
@@ -55,20 +57,28 @@ export default function App() {
             <Link to="/" className="navbar-logo">
               <span className="logo-icon">&#9650;</span> ShipIt
             </Link>
-            <nav className="navbar-links">
-              <Link to="/" className="navbar-link">Projects</Link>
-              <Link to="/hosts" className="navbar-link">Hosts</Link>
-              <Link to="/monitoring" className="navbar-link">Monitoring</Link>
-              <Link to="/logs" className="navbar-link">Logs</Link>
-              <Link to="/security" className="navbar-link">Security</Link>
-              <Link to="/alerts" className="navbar-link">Alerts</Link>
+            <button
+              className="navbar-toggle"
+              onClick={() => setMenuOpen((v) => !v)}
+              aria-label="Toggle navigation"
+              aria-expanded={menuOpen}
+            >
+              {menuOpen ? 'Close' : 'Menu'}
+            </button>
+            <nav className={`navbar-links ${menuOpen ? 'open' : ''}`}>
+              <NavLink to="/" end className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Projects</NavLink>
+              <NavLink to="/hosts" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Hosts</NavLink>
+              <NavLink to="/monitoring" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Monitoring</NavLink>
+              <NavLink to="/logs" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Logs</NavLink>
+              <NavLink to="/security" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Security</NavLink>
+              <NavLink to="/alerts" className={({ isActive }) => `navbar-link ${isActive ? 'active' : ''}`}>Alerts</NavLink>
             </nav>
             <div className="navbar-right">
               {username && <span className="navbar-user">{username}</span>}
-              <Link to="/new" className="btn btn-primary">
+              <Link to="/new" className="btn btn-primary" onClick={() => setMenuOpen(false)}>
                 + New Project
               </Link>
-              <Link to="/settings" className="btn">
+              <Link to="/settings" className="btn" onClick={() => setMenuOpen(false)}>
                 Settings
               </Link>
               <button className="btn" onClick={handleLogout}>

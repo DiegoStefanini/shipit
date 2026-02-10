@@ -1657,3 +1657,221 @@ label {
 .alerts-history-table tr:hover td {
   background: rgba(255, 255, 255, 0.02);
 }
+
+/* Visual refresh */
+:root {
+  --bg: #071420;
+  --card: #0f2232;
+  --border: #1f3b51;
+  --primary: #ff7a1a;
+  --primary-hover: #ff8f3f;
+  --text: #edf4fb;
+  --text-muted: #9eb2c5;
+  --error: #f97373;
+  --warning: #f7c948;
+  --blue: #54a6ff;
+  --radius: 12px;
+}
+
+body {
+  font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at 8% -5%, rgba(255, 122, 26, 0.22), transparent 34%),
+    radial-gradient(circle at 92% 0%, rgba(84, 166, 255, 0.16), transparent 28%),
+    linear-gradient(180deg, #071420 0%, #091a2a 100%);
+}
+
+.navbar {
+  background: rgba(7, 20, 32, 0.86);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(84, 166, 255, 0.22);
+}
+
+.logo-icon {
+  color: var(--primary);
+}
+
+.navbar-link {
+  border: 1px solid transparent;
+}
+
+.navbar-link:hover {
+  color: var(--text);
+  background: rgba(84, 166, 255, 0.1);
+  border-color: rgba(84, 166, 255, 0.22);
+}
+
+.navbar-link.active {
+  color: var(--text);
+  background: rgba(255, 122, 26, 0.18);
+  border-color: rgba(255, 122, 26, 0.4);
+}
+
+.navbar-toggle {
+  display: none;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 6px 10px;
+  background: rgba(255, 255, 255, 0.03);
+  color: var(--text);
+  cursor: pointer;
+}
+
+.main-content {
+  max-width: 1200px;
+}
+
+.card,
+.stats-bar,
+.metric-card,
+.settings-section,
+.alerts-stat-card,
+.security-stat-card,
+.log-filters,
+.log-list,
+.alert-chart,
+.alerts-form-card {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.025), rgba(255, 255, 255, 0.01));
+  border-color: rgba(84, 166, 255, 0.16);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.18);
+}
+
+.card:hover,
+.host-overview-card:hover {
+  border-color: rgba(255, 122, 26, 0.45);
+  box-shadow: 0 14px 32px rgba(4, 8, 14, 0.42);
+}
+
+.page-header h1 {
+  font-size: clamp(1.5rem, 2.4vw, 2rem);
+}
+
+.page-subtitle {
+  margin-top: 6px;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.page-header-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search-input {
+  max-width: 360px;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.btn {
+  border-radius: 10px;
+}
+
+.btn-primary {
+  color: #1b1107;
+  font-weight: 700;
+}
+
+.btn-primary:hover:not(:disabled) {
+  color: #1b1107;
+}
+
+.stat {
+  padding: 4px 2px;
+}
+
+.project-card-name {
+  letter-spacing: 0.01em;
+}
+
+.project-card-lang {
+  background: rgba(84, 166, 255, 0.15);
+  color: #8cc6ff;
+}
+
+.login-container {
+  background:
+    radial-gradient(circle at 15% 10%, rgba(255, 122, 26, 0.2), transparent 35%),
+    radial-gradient(circle at 85% 85%, rgba(84, 166, 255, 0.2), transparent 40%);
+}
+
+.login-card {
+  border-color: rgba(84, 166, 255, 0.24);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.35);
+}
+
+.login-kicker {
+  text-align: center;
+  color: #8cc6ff;
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  margin-bottom: 2px;
+}
+
+.login-subtitle {
+  margin-bottom: 28px;
+}
+
+@media (max-width: 980px) {
+  .navbar {
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .navbar-toggle {
+    display: inline-flex;
+    margin-left: auto;
+  }
+
+  .navbar-links {
+    display: none;
+    width: 100%;
+    order: 3;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 4px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(84, 166, 255, 0.2);
+  }
+
+  .navbar-links.open {
+    display: flex;
+  }
+
+  .navbar-right {
+    width: 100%;
+    order: 4;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
+
+  .page-header-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .page-header-actions .search-input {
+    flex: 1;
+    max-width: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-header-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .page-header-actions .btn {
+    justify-content: center;
+  }
+
+  .main-content {
+    padding-top: 16px;
+  }
+
+  .navbar-user {
+    display: none;
+  }
+}

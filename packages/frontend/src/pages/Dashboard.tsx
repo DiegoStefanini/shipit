@@ -46,14 +46,20 @@ export default function Dashboard() {
   return (
     <div>
       <div className="page-header">
-        <h1>Projects</h1>
-        <input
-          type="text"
-          className="search-input"
-          placeholder="Search projects..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        <div>
+          <h1>Projects</h1>
+          <p className="page-subtitle">Deploy, monitor, and manage services from one control plane.</p>
+        </div>
+        <div className="page-header-actions">
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Search projects..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+          <Link to="/new" className="btn btn-primary">+ New Project</Link>
+        </div>
       </div>
 
       {!loading && projects.length > 0 && (

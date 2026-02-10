@@ -42,6 +42,7 @@ export default function Login() {
           <span className="logo-icon">&#9650;</span>
           <h1>ShipIt</h1>
         </div>
+        <p className="login-kicker">Control Plane</p>
         <p className="login-subtitle">Sign in to your account</p>
         {error && <div className="error-msg">{error}</div>}
         <form onSubmit={handleSubmit}>
