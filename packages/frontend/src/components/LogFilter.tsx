@@ -25,7 +25,7 @@ export default function LogFilter({ filters, onChange, live, onToggleLive }: Log
     })
       .then((r) => r.json())
       .then((data) => setHosts(data))
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch hosts:', e))
   }, [])
 
   const update = (key: keyof LogFilterState, value: string) => {

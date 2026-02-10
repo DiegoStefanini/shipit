@@ -3,6 +3,8 @@ import db from '../db/connection.js';
 import { config } from '../config.js';
 import { enqueueBuild } from '../engine/builder.js';
 import { exec } from '../services/ssh.js';
+import { validate } from '../middleware/validate.js';
+import { createProjectSchema, updateProjectSchema } from '../validation/schemas.js';
 
 async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
   if (!config.giteaToken) return;
@@ -42,18 +44,8 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 // POST /api/projects
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createProjectSchema), (req: Request, res: Response) => {
   const { name, gitea_repo, gitea_url, branch } = req.body;
-
-  if (!name || !gitea_repo || !gitea_url) {
-    res.status(400).json({ error: 'name, gitea_repo, and gitea_url are required' });
-    return;
-  }
-
-  if (!NAME_REGEX.test(name)) {
-    res.status(400).json({ error: 'name must be lowercase alphanumeric with hyphens only' });
-    return;
-  }
 
   const id = crypto.randomUUID();
   const now = Date.now();
@@ -88,7 +80,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // PATCH /api/projects/:id
-router.patch('/:id', (req: Request, res: Response) => {
+router.patch('/:id', validate(updateProjectSchema), (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
   if (!project) {
     res.status(404).json({ error: 'Project not found' });
@@ -100,10 +92,6 @@ router.patch('/:id', (req: Request, res: Response) => {
   const values: unknown[] = [];
 
   if (name !== undefined) {
-    if (!NAME_REGEX.test(name)) {
-      res.status(400).json({ error: 'name must be lowercase alphanumeric with hyphens only' });
-      return;
-    }
     updates.push('name = ?');
     values.push(name);
   }

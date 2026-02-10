@@ -28,7 +28,7 @@ export default function Security() {
     apiFetch('/api/security/overview')
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
       .then(setOverview)
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch security overview:', e))
   }, [])
 
   const fetchAlerts = useCallback((offset = 0) => {
@@ -43,14 +43,14 @@ export default function Security() {
         setAlertsTotal(data.total)
         setAlertsOffset(offset)
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch security alerts:', e))
   }, [])
 
   const fetchDecisions = useCallback(() => {
     apiFetch('/api/security/decisions')
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
       .then(setDecisions)
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch security decisions:', e))
   }, [])
 
   const fetchHosts = useCallback(() => {
@@ -63,7 +63,7 @@ export default function Security() {
           if (csHosts.length > 0) setBlockHostId(csHosts[0].id)
         }
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch hosts:', e))
   }, [blockHostId])
 
   useEffect(() => {

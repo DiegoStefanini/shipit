@@ -3,6 +3,8 @@ import db from '../db/connection.js';
 import { encrypt, decrypt } from '../services/crypto.js';
 import { config } from '../config.js';
 import * as proxmox from '../services/proxmox.js';
+import { validate } from '../middleware/validate.js';
+import { proxmoxSettingsSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -42,13 +44,8 @@ router.get('/proxmox', (_req: Request, res: Response) => {
 });
 
 // PUT /api/settings/proxmox
-router.put('/proxmox', (req: Request, res: Response) => {
+router.put('/proxmox', validate(proxmoxSettingsSchema), (req: Request, res: Response) => {
   const { url, tokenId, tokenSecret } = req.body;
-
-  if (!url || !tokenId || !tokenSecret) {
-    res.status(400).json({ error: 'url, tokenId, and tokenSecret are required' });
-    return;
-  }
 
   const now = Date.now();
   const encryptedSecret = encrypt(tokenSecret, config.jwtSecret);

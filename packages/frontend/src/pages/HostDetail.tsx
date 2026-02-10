@@ -1,27 +1,14 @@
 import { useEffect, useState, useCallback, type FormEvent } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import StatusIndicator from '../components/StatusIndicator'
+import HostEditForm from '../components/host/HostEditForm'
+import HostMetricsDisplay from '../components/host/HostMetrics'
+import HostProjects from '../components/host/HostProjects'
 import { apiFetch } from '../api'
 import { usePolling } from '../hooks/usePolling'
 import { useToast } from '../components/Toast'
 import { timeAgo } from '../utils/time'
 import type { Host, HostMetrics, Project } from '../types'
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-  if (bytes < 1024 * 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`
-  return `${(bytes / (1024 * 1024 * 1024)).toFixed(1)} GB`
-}
-
-function formatUptime(seconds: number): string {
-  const d = Math.floor(seconds / 86400)
-  const h = Math.floor((seconds % 86400) / 3600)
-  const m = Math.floor((seconds % 3600) / 60)
-  if (d > 0) return `${d}d ${h}h`
-  if (h > 0) return `${h}h ${m}m`
-  return `${m}m`
-}
 
 export default function HostDetail() {
   const { id } = useParams<{ id: string }>()
@@ -82,7 +69,7 @@ export default function HostDetail() {
       .then((m) => {
         if (m) setMetrics(m)
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch host metrics:', e))
   }, [id])
 
   const fetchProjects = useCallback(() => {
@@ -94,7 +81,7 @@ export default function HostDetail() {
       .then((all: Project[]) => {
         setProjects(all.filter((p) => p.host_id === id))
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch projects:', e))
   }, [id])
 
   useEffect(() => {
@@ -214,177 +201,17 @@ export default function HostDetail() {
       )}
 
       {showEdit && (
-        <div className="settings-section" style={{ marginBottom: 24 }}>
-          <h2>Edit Host</h2>
-          <form onSubmit={handleSave}>
-            <div className="form-group">
-              <label>Name</label>
-              <input
-                type="text"
-                value={editForm.name}
-                onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>Type</label>
-              <select
-                value={editForm.type}
-                onChange={(e) => setEditForm({ ...editForm, type: e.target.value as 'vm' | 'ct' })}
-              >
-                <option value="vm">VM</option>
-                <option value="ct">CT</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Proxmox VMID (optional)</label>
-              <input
-                type="text"
-                value={editForm.proxmox_vmid}
-                onChange={(e) => setEditForm({ ...editForm, proxmox_vmid: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>IP Address</label>
-              <input
-                type="text"
-                value={editForm.ip_address}
-                onChange={(e) => setEditForm({ ...editForm, ip_address: e.target.value })}
-                required
-              />
-            </div>
-            <div className="form-group">
-              <label>SSH Port</label>
-              <input
-                type="text"
-                value={editForm.ssh_port}
-                onChange={(e) => setEditForm({ ...editForm, ssh_port: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>SSH User</label>
-              <input
-                type="text"
-                value={editForm.ssh_user}
-                onChange={(e) => setEditForm({ ...editForm, ssh_user: e.target.value })}
-              />
-            </div>
-            <div className="form-group">
-              <label>SSH Key Path</label>
-              <input
-                type="text"
-                value={editForm.ssh_key_path}
-                onChange={(e) => setEditForm({ ...editForm, ssh_key_path: e.target.value })}
-              />
-            </div>
-            <div className="checkbox-group">
-              <label className="toggle-label">
-                <input
-                  type="checkbox"
-                  checked={editForm.has_docker}
-                  onChange={(e) => setEditForm({ ...editForm, has_docker: e.target.checked })}
-                />
-                Has Docker
-              </label>
-              <label className="toggle-label">
-                <input
-                  type="checkbox"
-                  checked={editForm.has_crowdsec}
-                  onChange={(e) => setEditForm({ ...editForm, has_crowdsec: e.target.checked })}
-                />
-                Has CrowdSec
-              </label>
-            </div>
-            <button type="submit" className="btn btn-primary" disabled={saving}>
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </form>
-        </div>
+        <HostEditForm
+          editForm={editForm}
+          saving={saving}
+          onEditFormChange={setEditForm}
+          onSave={handleSave}
+        />
       )}
 
-      {metrics && (
-        <>
-          <h2 className="section-title">Metrics</h2>
-          <div className="metrics-grid">
-            <div className="metric-card">
-              <div className="metric-label">CPU</div>
-              <div className="metric-bar">
-                <div
-                  className="metric-bar-fill"
-                  style={{
-                    width: `${Math.min(metrics.cpu, 100)}%`,
-                    background: metrics.cpu > 80 ? 'var(--error)' : 'var(--primary)',
-                  }}
-                />
-              </div>
-              <div className="metric-value">{metrics.cpu.toFixed(1)}%</div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Memory</div>
-              <div className="metric-bar">
-                <div
-                  className="metric-bar-fill"
-                  style={{
-                    width: `${metrics.memory.total > 0 ? (metrics.memory.used / metrics.memory.total) * 100 : 0}%`,
-                    background: metrics.memory.total > 0 && (metrics.memory.used / metrics.memory.total) > 0.8 ? 'var(--error)' : 'var(--blue)',
-                  }}
-                />
-              </div>
-              <div className="metric-value">
-                {formatBytes(metrics.memory.used)} / {formatBytes(metrics.memory.total)}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Disk</div>
-              <div className="metric-bar">
-                <div
-                  className="metric-bar-fill"
-                  style={{
-                    width: `${metrics.disk.total > 0 ? (metrics.disk.used / metrics.disk.total) * 100 : 0}%`,
-                    background: metrics.disk.total > 0 && (metrics.disk.used / metrics.disk.total) > 0.8 ? 'var(--warning)' : 'var(--primary)',
-                  }}
-                />
-              </div>
-              <div className="metric-value">
-                {formatBytes(metrics.disk.used)} / {formatBytes(metrics.disk.total)}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Network</div>
-              <div className="metric-value" style={{ marginTop: 8 }}>
-                In: {formatBytes(metrics.netin)} / Out: {formatBytes(metrics.netout)}
-              </div>
-            </div>
-            <div className="metric-card">
-              <div className="metric-label">Uptime</div>
-              <div className="metric-value" style={{ marginTop: 8 }}>
-                {formatUptime(metrics.uptime)}
-              </div>
-            </div>
-          </div>
-        </>
-      )}
+      {metrics && <HostMetricsDisplay metrics={metrics} />}
 
-      <h2 className="section-title" style={{ marginTop: 32 }}>Projects on this Host</h2>
-      {projects.length === 0 ? (
-        <div className="empty-state" style={{ padding: 32 }}>
-          <p>No projects deployed on this host.</p>
-        </div>
-      ) : (
-        <div className="deploy-list">
-          {projects.map((p) => (
-            <Link key={p.id} to={`/projects/${p.id}`} className="deploy-item" style={{ display: 'block' }}>
-              <div className="deploy-item-header" style={{ cursor: 'pointer' }}>
-                <div className="deploy-item-info">
-                  <span style={{ fontWeight: 600 }}>{p.name}</span>
-                  <span className="text-muted">{p.gitea_repo}</span>
-                </div>
-                <span className={`deploy-badge deploy-badge-${p.status || 'idle'}`}>{p.status}</span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      )}
+      <HostProjects projects={projects} />
 
       {showConfirm && (
         <div className="confirm-overlay" onClick={() => setShowConfirm(false)}>

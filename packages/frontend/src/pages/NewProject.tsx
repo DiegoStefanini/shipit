@@ -21,7 +21,7 @@ export default function NewProject() {
     apiFetch('/api/hosts')
       .then((r) => (r.ok ? r.json() : []))
       .then(setHosts)
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch hosts:', e))
   }, [])
 
   const { baseDomain } = getConfig()

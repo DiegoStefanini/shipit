@@ -13,6 +13,7 @@ import Security from './pages/Security'
 import Alerts from './pages/Alerts'
 import Logs from './pages/Logs'
 import { ToastProvider } from './components/Toast'
+import ErrorBoundary from './components/ErrorBoundary'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = localStorage.getItem('shipit_token')
@@ -116,20 +117,22 @@ export default function App() {
           </header>
         )}
         <main className={token ? 'main-content' : ''}>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
-            <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
-            <Route path="/projects/:id/settings" element={<ProtectedRoute><ProjectSettings /></ProtectedRoute>} />
-            <Route path="/hosts" element={<ProtectedRoute><Hosts /></ProtectedRoute>} />
-            <Route path="/hosts/:id" element={<ProtectedRoute><HostDetail /></ProtectedRoute>} />
-            <Route path="/monitoring" element={<ProtectedRoute><Monitoring /></ProtectedRoute>} />
-            <Route path="/logs" element={<ProtectedRoute><Logs /></ProtectedRoute>} />
-            <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
-            <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
-            <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
-          </Routes>
+          <ErrorBoundary>
+            <Routes>
+              <Route path="/login" element={<Login />} />
+              <Route path="/" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/new" element={<ProtectedRoute><NewProject /></ProtectedRoute>} />
+              <Route path="/projects/:id" element={<ProtectedRoute><ProjectDetail /></ProtectedRoute>} />
+              <Route path="/projects/:id/settings" element={<ProtectedRoute><ProjectSettings /></ProtectedRoute>} />
+              <Route path="/hosts" element={<ProtectedRoute><Hosts /></ProtectedRoute>} />
+              <Route path="/hosts/:id" element={<ProtectedRoute><HostDetail /></ProtectedRoute>} />
+              <Route path="/monitoring" element={<ProtectedRoute><Monitoring /></ProtectedRoute>} />
+              <Route path="/logs" element={<ProtectedRoute><Logs /></ProtectedRoute>} />
+              <Route path="/security" element={<ProtectedRoute><Security /></ProtectedRoute>} />
+              <Route path="/alerts" element={<ProtectedRoute><Alerts /></ProtectedRoute>} />
+              <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
+            </Routes>
+          </ErrorBoundary>
         </main>
       </div>
     </ToastProvider>

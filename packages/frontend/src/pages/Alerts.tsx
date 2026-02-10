@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
+import ChannelForm from '../components/alerts/ChannelForm'
+import ChannelList from '../components/alerts/ChannelList'
+import RuleForm from '../components/alerts/RuleForm'
+import RuleList from '../components/alerts/RuleList'
+import AlertHistory from '../components/alerts/AlertHistory'
 import type { NotificationChannel, AlertRule, AlertHistoryEntry } from '../types'
 
 type Tab = 'channels' | 'rules' | 'history'
@@ -38,14 +43,14 @@ export default function Alerts() {
     apiFetch('/api/alerts/channels')
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
       .then(setChannels)
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch channels:', e))
   }, [])
 
   const fetchRules = useCallback(() => {
     apiFetch('/api/alerts/rules')
       .then(r => { if (!r.ok) throw new Error('Failed'); return r.json() })
       .then(setRules)
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch rules:', e))
   }, [])
 
   const fetchHistory = useCallback((offset = 0) => {
@@ -60,7 +65,7 @@ export default function Alerts() {
         setHistoryTotal(data.total)
         setHistoryOffset(offset)
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch alert history:', e))
   }, [])
 
   useEffect(() => {
@@ -316,220 +321,70 @@ export default function Alerts() {
       {/* Channels tab */}
       {tab === 'channels' && (
         <>
-          <div className="alerts-form-card">
-            <h3>{editingChannelId ? 'Edit Channel' : 'New Channel'}</h3>
-            <div className="alerts-form-row">
-              <input
-                type="text"
-                placeholder="Channel name"
-                value={chName}
-                onChange={e => setChName(e.target.value)}
-              />
-              <select value={chType} onChange={e => setChType(e.target.value as 'telegram' | 'discord')}>
-                <option value="telegram">Telegram</option>
-                <option value="discord">Discord</option>
-              </select>
-            </div>
-            {chType === 'telegram' ? (
-              <div className="alerts-form-row">
-                <input
-                  type="text"
-                  placeholder="Bot Token"
-                  value={chBotToken}
-                  onChange={e => setChBotToken(e.target.value)}
-                />
-                <input
-                  type="text"
-                  placeholder="Chat ID"
-                  value={chChatId}
-                  onChange={e => setChChatId(e.target.value)}
-                />
-              </div>
-            ) : (
-              <div className="alerts-form-row">
-                <input
-                  type="text"
-                  placeholder="Webhook URL"
-                  value={chWebhookUrl}
-                  onChange={e => setChWebhookUrl(e.target.value)}
-                />
-              </div>
-            )}
-            <div className="alerts-form-actions">
-              <button className="btn btn-primary" onClick={handleSaveChannel} disabled={chSaving || !chName}>
-                {chSaving ? 'Saving...' : editingChannelId ? 'Update' : 'Create'}
-              </button>
-              {editingChannelId && (
-                <button className="btn" onClick={resetChannelForm}>Cancel</button>
-              )}
-            </div>
-          </div>
-
-          <div className="alerts-list">
-            {channels.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">&#128276;</div>
-                <h2>No channels configured</h2>
-                <p className="text-muted">Add a Telegram or Discord channel to receive notifications.</p>
-              </div>
-            ) : (
-              channels.map(ch => (
-                <div key={ch.id} className={`alerts-list-item ${!ch.enabled ? 'disabled' : ''}`}>
-                  <div className="alerts-list-item-info">
-                    <span className={`alerts-type-badge ${ch.type}`}>{ch.type}</span>
-                    <span className="alerts-list-item-name">{ch.name}</span>
-                    {!ch.enabled && <span className="alerts-disabled-badge">Disabled</span>}
-                  </div>
-                  <div className="alerts-list-item-actions">
-                    <button className="btn btn-sm" onClick={() => handleTestChannel(ch.id)}>Test</button>
-                    <button className="btn btn-sm" onClick={() => handleToggleChannel(ch)}>
-                      {ch.enabled ? 'Disable' : 'Enable'}
-                    </button>
-                    <button className="btn btn-sm" onClick={() => handleEditChannel(ch)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteChannel(ch.id)}>Delete</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <ChannelForm
+            chName={chName}
+            chType={chType}
+            chBotToken={chBotToken}
+            chChatId={chChatId}
+            chWebhookUrl={chWebhookUrl}
+            chSaving={chSaving}
+            editingChannelId={editingChannelId}
+            onChNameChange={setChName}
+            onChTypeChange={setChType}
+            onChBotTokenChange={setChBotToken}
+            onChChatIdChange={setChChatId}
+            onChWebhookUrlChange={setChWebhookUrl}
+            onSave={handleSaveChannel}
+            onCancel={resetChannelForm}
+          />
+          <ChannelList
+            channels={channels}
+            onTest={handleTestChannel}
+            onToggle={handleToggleChannel}
+            onEdit={handleEditChannel}
+            onDelete={handleDeleteChannel}
+          />
         </>
       )}
 
       {/* Rules tab */}
       {tab === 'rules' && (
         <>
-          <div className="alerts-form-card">
-            <h3>{editingRuleId ? 'Edit Rule' : 'New Rule'}</h3>
-            <div className="alerts-form-row">
-              <input
-                type="text"
-                placeholder="Rule name"
-                value={ruleName}
-                onChange={e => setRuleName(e.target.value)}
-              />
-              <select value={ruleType} onChange={e => setRuleType(e.target.value as AlertRule['type'])}>
-                <option value="metric_threshold">Metric Threshold</option>
-                <option value="service_down">Service Down</option>
-                <option value="security">Security</option>
-                <option value="deploy">Deploy Failed</option>
-              </select>
-            </div>
-            <div className="form-group">
-              <label>Condition (JSON)</label>
-              <input
-                type="text"
-                value={ruleCondition}
-                onChange={e => setRuleCondition(e.target.value)}
-                placeholder='{"metric_name":"cpu","operator":">","value":90}'
-              />
-              <div className="form-hint">
-                {ruleType === 'metric_threshold' && 'Example: {"metric_name":"cpu","operator":">","value":90}'}
-                {ruleType === 'service_down' && 'Example: {"host_id":"optional-host-id"}'}
-                {ruleType === 'security' && 'Example: {"min_count":10,"window_minutes":60}'}
-                {ruleType === 'deploy' && 'Example: {"project_id":"optional-project-id"}'}
-              </div>
-            </div>
-            <div className="form-group">
-              <label>Cooldown (seconds)</label>
-              <input
-                type="number"
-                value={ruleCooldown}
-                onChange={e => setRuleCooldown(parseInt(e.target.value) || 300)}
-              />
-            </div>
-            <div className="form-group">
-              <label>Notify Channels</label>
-              <div className="alerts-channel-select">
-                {channels.map(ch => (
-                  <label key={ch.id} className="alerts-channel-option">
-                    <input
-                      type="checkbox"
-                      checked={ruleChannelIds.includes(ch.id)}
-                      onChange={() => toggleChannelSelection(ch.id)}
-                    />
-                    <span>{ch.name} ({ch.type})</span>
-                  </label>
-                ))}
-                {channels.length === 0 && <span className="text-muted">No channels available. Create one first.</span>}
-              </div>
-            </div>
-            <div className="alerts-form-actions">
-              <button className="btn btn-primary" onClick={handleSaveRule} disabled={ruleSaving || !ruleName || ruleChannelIds.length === 0}>
-                {ruleSaving ? 'Saving...' : editingRuleId ? 'Update' : 'Create'}
-              </button>
-              {editingRuleId && (
-                <button className="btn" onClick={resetRuleForm}>Cancel</button>
-              )}
-            </div>
-          </div>
-
-          <div className="alerts-list">
-            {rules.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">&#9888;</div>
-                <h2>No alert rules</h2>
-                <p className="text-muted">Create rules to get notified about issues.</p>
-              </div>
-            ) : (
-              rules.map(rule => (
-                <div key={rule.id} className={`alerts-list-item ${!rule.enabled ? 'disabled' : ''}`}>
-                  <div className="alerts-list-item-info">
-                    <span className={`alerts-type-badge rule-${rule.type}`}>{rule.type.replace('_', ' ')}</span>
-                    <span className="alerts-list-item-name">{rule.name}</span>
-                    {!rule.enabled && <span className="alerts-disabled-badge">Disabled</span>}
-                    {rule.last_triggered_at && (
-                      <span className="text-muted" style={{ fontSize: '0.8rem' }}>
-                        Last: {formatTime(rule.last_triggered_at)}
-                      </span>
-                    )}
-                  </div>
-                  <div className="alerts-list-item-actions">
-                    <button className="btn btn-sm" onClick={() => handleToggleRule(rule)}>
-                      {rule.enabled ? 'Disable' : 'Enable'}
-                    </button>
-                    <button className="btn btn-sm" onClick={() => handleEditRule(rule)}>Edit</button>
-                    <button className="btn btn-sm btn-danger" onClick={() => handleDeleteRule(rule.id)}>Delete</button>
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
+          <RuleForm
+            ruleName={ruleName}
+            ruleType={ruleType}
+            ruleCondition={ruleCondition}
+            ruleChannelIds={ruleChannelIds}
+            ruleCooldown={ruleCooldown}
+            ruleSaving={ruleSaving}
+            editingRuleId={editingRuleId}
+            channels={channels}
+            onRuleNameChange={setRuleName}
+            onRuleTypeChange={setRuleType}
+            onRuleConditionChange={setRuleCondition}
+            onToggleChannel={toggleChannelSelection}
+            onRuleCooldownChange={setRuleCooldown}
+            onSave={handleSaveRule}
+            onCancel={resetRuleForm}
+          />
+          <RuleList
+            rules={rules}
+            onToggle={handleToggleRule}
+            onEdit={handleEditRule}
+            onDelete={handleDeleteRule}
+            formatTime={formatTime}
+          />
         </>
       )}
 
       {/* History tab */}
       {tab === 'history' && (
-        <>
-          <table className="alerts-history-table">
-            <thead>
-              <tr>
-                <th>Time</th>
-                <th>Rule</th>
-                <th>Message</th>
-              </tr>
-            </thead>
-            <tbody>
-              {history.length === 0 ? (
-                <tr><td colSpan={3} style={{ textAlign: 'center', color: 'var(--text-muted)' }}>No alert history</td></tr>
-              ) : (
-                history.map(h => (
-                  <tr key={h.id}>
-                    <td style={{ whiteSpace: 'nowrap' }}>{formatTime(h.triggered_at)}</td>
-                    <td>{h.rule_name ?? '-'}</td>
-                    <td>{h.message}</td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-          {history.length < historyTotal && (
-            <div style={{ textAlign: 'center', marginTop: 16 }}>
-              <button className="btn" onClick={() => fetchHistory(historyOffset + 50)}>
-                Load more ({historyTotal - history.length} remaining)
-              </button>
-            </div>
-          )}
-        </>
+        <AlertHistory
+          history={history}
+          historyTotal={historyTotal}
+          onLoadMore={() => fetchHistory(historyOffset + 50)}
+          formatTime={formatTime}
+        />
       )}
     </div>
   )

@@ -23,7 +23,7 @@ export default function Settings() {
         if (data.tokenId) setTokenId(data.tokenId)
         if (data.tokenSecret) setTokenSecret(data.tokenSecret)
       })
-      .catch(() => {})
+      .catch(e => console.error('Failed to fetch proxmox settings:', e))
       .finally(() => setLoading(false))
   }, [])
 

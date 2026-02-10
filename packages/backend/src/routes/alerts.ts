@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import db from '../db/connection.js';
 import { notify } from '../services/notifier.js';
+import { validate } from '../middleware/validate.js';
+import { createChannelSchema, updateChannelSchema, createRuleSchema, updateRuleSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -14,12 +16,8 @@ router.get('/channels', (_req: Request, res: Response) => {
 });
 
 // POST /api/alerts/channels
-router.post('/channels', (req: Request, res: Response) => {
+router.post('/channels', validate(createChannelSchema), (req: Request, res: Response) => {
   const { name, type, config: channelConfig } = req.body;
-  if (!name || !type || !channelConfig) {
-    res.status(400).json({ error: 'name, type, and config are required' });
-    return;
-  }
 
   const id = randomUUID();
   const now = Date.now();
@@ -33,7 +31,7 @@ router.post('/channels', (req: Request, res: Response) => {
 });
 
 // PATCH /api/alerts/channels/:id
-router.patch('/channels/:id', (req: Request, res: Response) => {
+router.patch('/channels/:id', validate(updateChannelSchema), (req: Request, res: Response) => {
   const { id } = req.params;
   const existing = db.prepare('SELECT * FROM notification_channels WHERE id = ?').get(id);
   if (!existing) {
@@ -90,12 +88,8 @@ router.get('/rules', (_req: Request, res: Response) => {
 });
 
 // POST /api/alerts/rules
-router.post('/rules', (req: Request, res: Response) => {
+router.post('/rules', validate(createRuleSchema), (req: Request, res: Response) => {
   const { name, type, condition, channel_ids, cooldown } = req.body;
-  if (!name || !type || !condition || !channel_ids) {
-    res.status(400).json({ error: 'name, type, condition, and channel_ids are required' });
-    return;
-  }
 
   const id = randomUUID();
   const now = Date.now();
@@ -110,7 +104,7 @@ router.post('/rules', (req: Request, res: Response) => {
 });
 
 // PATCH /api/alerts/rules/:id
-router.patch('/rules/:id', (req: Request, res: Response) => {
+router.patch('/rules/:id', validate(updateRuleSchema), (req: Request, res: Response) => {
   const { id } = req.params;
   const existing = db.prepare('SELECT * FROM alert_rules WHERE id = ?').get(id);
   if (!existing) {

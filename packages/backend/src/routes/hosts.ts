@@ -2,6 +2,8 @@ import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
 import * as ssh from '../services/ssh.js';
 import * as proxmox from '../services/proxmox.js';
+import { validate } from '../middleware/validate.js';
+import { createHostSchema, updateHostSchema } from '../validation/schemas.js';
 
 const router = Router();
 
@@ -17,13 +19,8 @@ router.get('/', (_req: Request, res: Response) => {
 });
 
 // POST /api/hosts
-router.post('/', (req: Request, res: Response) => {
+router.post('/', validate(createHostSchema), (req: Request, res: Response) => {
   const { name, type, proxmox_vmid, ip_address, ssh_port, ssh_user, ssh_key_path, has_docker, has_crowdsec } = req.body;
-
-  if (!name || !ip_address) {
-    res.status(400).json({ error: 'name and ip_address are required' });
-    return;
-  }
 
   const id = crypto.randomUUID();
   const now = Date.now();
@@ -70,7 +67,7 @@ router.get('/:id', (req: Request, res: Response) => {
 });
 
 // PATCH /api/hosts/:id
-router.patch('/:id', (req: Request, res: Response) => {
+router.patch('/:id', validate(updateHostSchema), (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req));
   if (!host) {
     res.status(404).json({ error: 'Host not found' });

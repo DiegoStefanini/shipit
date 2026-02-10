@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import * as http from 'http';
 import { config } from './config.js';
@@ -10,6 +10,7 @@ import authRouter from './routes/auth.js';
 import hostsRouter from './routes/hosts.js';
 import settingsRouter from './routes/settings.js';
 import { authMiddleware } from './middleware/auth.js';
+import { authLimiter, apiLimiter } from './middleware/rate-limit.js';
 import monitoringRouter from './routes/monitoring.js';
 import { startCollector, stopCollector } from './services/collector.js';
 import logsRouter from './routes/logs.js';
@@ -34,15 +35,21 @@ app.get('/api/config', (_req, res) => {
   res.json({ baseDomain: config.baseDomain, giteaUrl: config.giteaUrl });
 });
 
-app.use('/api/auth', authRouter);
-app.use('/api/projects', authMiddleware, projectsRouter);
+app.use('/api/auth', authLimiter, authRouter);
+app.use('/api/projects', authMiddleware, apiLimiter, projectsRouter);
 app.use('/api/webhooks', webhooksRouter);
-app.use('/api/hosts', authMiddleware, hostsRouter);
-app.use('/api/settings', authMiddleware, settingsRouter);
-app.use('/api/monitoring', authMiddleware, monitoringRouter);
-app.use('/api/logs', authMiddleware, logsRouter);
-app.use('/api/security', authMiddleware, securityRouter);
-app.use('/api/alerts', authMiddleware, alertsRouter);
+app.use('/api/hosts', authMiddleware, apiLimiter, hostsRouter);
+app.use('/api/settings', authMiddleware, apiLimiter, settingsRouter);
+app.use('/api/monitoring', authMiddleware, apiLimiter, monitoringRouter);
+app.use('/api/logs', authMiddleware, apiLimiter, logsRouter);
+app.use('/api/security', authMiddleware, apiLimiter, securityRouter);
+app.use('/api/alerts', authMiddleware, apiLimiter, alertsRouter);
+
+// Global error handler
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Unhandled error:', err);
+  res.status(500).json({ error: 'Internal server error' });
+});
 
 const server = http.createServer(app);
 setupWebSocket(server);
