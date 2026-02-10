@@ -1,5 +1,10 @@
 import db from '../db/connection.js';
 import { exec } from './ssh.js';
+import { logger } from '../logger.js';
+
+function shellEscape(s: string): string {
+  return "'" + s.replace(/'/g, "'\\''") + "'";
+}
 
 let pollInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -20,7 +25,7 @@ async function collectAll(): Promise<void> {
       await collectAlerts(host);
       await collectDecisions(host);
     } catch (err) {
-      console.error(`CrowdSec collection failed for ${host.name}:`, err);
+      logger.error({ err, host: host.name }, 'CrowdSec collection failed');
     }
   }
 }
@@ -109,7 +114,7 @@ function parseDurationToMs(duration: string): number {
 
 export async function blockIP(hostId: string, ip: string, duration: string, reason: string): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await exec(hostId, `cscli decisions add --ip ${ip} --duration ${duration} --reason "${reason}" 2>&1`);
+    const result = await exec(hostId, `cscli decisions add --ip ${shellEscape(ip)} --duration ${shellEscape(duration)} --reason ${shellEscape(reason)} 2>&1`);
     return { success: result.code === 0, message: result.stdout.trim() || result.stderr.trim() };
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };
@@ -118,7 +123,7 @@ export async function blockIP(hostId: string, ip: string, duration: string, reas
 
 export async function unblockIP(hostId: string, ip: string): Promise<{ success: boolean; message: string }> {
   try {
-    const result = await exec(hostId, `cscli decisions delete --ip ${ip} 2>&1`);
+    const result = await exec(hostId, `cscli decisions delete --ip ${shellEscape(ip)} 2>&1`);
     return { success: result.code === 0, message: result.stdout.trim() || result.stderr.trim() };
   } catch (err) {
     return { success: false, message: err instanceof Error ? err.message : String(err) };

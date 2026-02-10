@@ -1,5 +1,6 @@
 import db from '../db/connection.js';
 import { notify } from './notifier.js';
+import { logger } from '../logger.js';
 
 let evaluatorInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -60,7 +61,7 @@ async function evaluateRules(): Promise<void> {
         await triggerAlert(rule, message, now);
       }
     } catch (err) {
-      console.error(`Alert rule "${rule.name}" evaluation failed:`, err);
+      logger.error({ err, rule: rule.name }, 'Alert rule evaluation failed');
     }
   }
 }

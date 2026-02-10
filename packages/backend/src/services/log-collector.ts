@@ -1,6 +1,7 @@
 import db from '../db/connection.js';
 import { exec } from './ssh.js';
 import { parseDockerLog, parseJournalctlJson, detectLevel } from './log-parser.js';
+import { logger } from '../logger.js';
 
 let collectorInterval: ReturnType<typeof setInterval> | null = null;
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
@@ -24,7 +25,7 @@ async function collectAllLogs(): Promise<void> {
     try {
       await collectHostLogs(host);
     } catch (err) {
-      console.error(`Log collection failed for ${host.name}:`, err);
+      logger.error({ err, host: host.name }, 'Log collection failed');
     }
   }
 }

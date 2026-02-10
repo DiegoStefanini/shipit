@@ -1,4 +1,5 @@
 import db from '../db/connection.js';
+import { logger } from '../logger.js';
 
 interface TelegramConfig {
   bot_token: string;
@@ -18,7 +19,7 @@ export async function sendTelegram(config: TelegramConfig, message: string): Pro
     });
     return res.ok;
   } catch (err) {
-    console.error('Telegram send failed:', err);
+    logger.error({ err }, 'Telegram send failed');
     return false;
   }
 }
@@ -32,7 +33,7 @@ export async function sendDiscord(config: DiscordConfig, message: string): Promi
     });
     return res.ok || res.status === 204;
   } catch (err) {
-    console.error('Discord send failed:', err);
+    logger.error({ err }, 'Discord send failed');
     return false;
   }
 }
@@ -52,7 +53,7 @@ export async function notify(channelId: string, message: string): Promise<boolea
     case 'discord':
       return sendDiscord(cfg as DiscordConfig, message);
     default:
-      console.error(`Unknown channel type: ${channel.type}`);
+      logger.error({ type: channel.type }, 'Unknown channel type');
       return false;
   }
 }

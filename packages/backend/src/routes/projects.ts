@@ -5,6 +5,7 @@ import { enqueueBuild } from '../engine/builder.js';
 import { exec } from '../services/ssh.js';
 import { validate } from '../middleware/validate.js';
 import { createProjectSchema, updateProjectSchema } from '../validation/schemas.js';
+import { asyncHandler } from '../middleware/async-handler.js';
 
 async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
   if (!config.giteaToken) return;
@@ -119,7 +120,7 @@ router.patch('/:id', validate(updateProjectSchema), (req: Request, res: Response
 });
 
 // DELETE /api/projects/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
   if (!project) {
     res.status(404).json({ error: 'Project not found' });
@@ -139,7 +140,7 @@ router.delete('/:id', async (req: Request, res: Response) => {
   db.prepare('DELETE FROM deploys WHERE project_id = ?').run(paramId(req));
   db.prepare('DELETE FROM projects WHERE id = ?').run(paramId(req));
   res.status(204).end();
-});
+}));
 
 // POST /api/projects/:id/deploy
 router.post('/:id/deploy', (req: Request, res: Response) => {
@@ -154,7 +155,7 @@ router.post('/:id/deploy', (req: Request, res: Response) => {
 });
 
 // POST /api/projects/:id/stop
-router.post('/:id/stop', async (req: Request, res: Response) => {
+router.post('/:id/stop', asyncHandler(async (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
   if (!project) {
     res.status(404).json({ error: 'Project not found' });
@@ -179,7 +180,7 @@ router.post('/:id/stop', async (req: Request, res: Response) => {
   db.prepare('UPDATE projects SET status = ?, container_id = NULL, updated_at = ? WHERE id = ?').run('stopped', Date.now(), paramId(req));
   const updated = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));
   res.json(updated);
-});
+}));
 
 // POST /api/projects/:id/start
 router.post('/:id/start', (req: Request, res: Response) => {

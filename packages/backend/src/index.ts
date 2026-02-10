@@ -1,4 +1,5 @@
 import express, { Request, Response, NextFunction } from 'express';
+import helmet from 'helmet';
 import cors from 'cors';
 import * as http from 'http';
 import { config } from './config.js';
@@ -21,11 +22,22 @@ import { disconnectAll } from './services/ssh.js';
 import alertsRouter from './routes/alerts.js';
 import { startAlertEvaluator, stopAlertEvaluator } from './services/alert-evaluator.js';
 import db from './db/connection.js';
+import { logger } from './logger.js';
 
 const app = express();
 
-app.use(cors());
+app.use(helmet({ contentSecurityPolicy: false }));
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+
+// Request logging
+app.use((req, res, next) => {
+  const start = Date.now();
+  res.on('finish', () => {
+    logger.info({ method: req.method, url: req.url, status: res.statusCode, ms: Date.now() - start }, 'request');
+  });
+  next();
+});
 
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok', version: config.version, timestamp: Date.now() });
@@ -47,7 +59,7 @@ app.use('/api/alerts', authMiddleware, apiLimiter, alertsRouter);
 
 // Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
-  console.error('Unhandled error:', err);
+  logger.error({ err }, 'Unhandled error');
   res.status(500).json({ error: 'Internal server error' });
 });
 
@@ -61,11 +73,11 @@ startCrowdSecCollector();
 startAlertEvaluator();
 
 server.listen(config.port, () => {
-  console.log(`ShipIt backend listening on port ${config.port}`);
+  logger.info({ port: config.port }, 'ShipIt backend listening');
 });
 
 function shutdown() {
-  console.log('Shutting down gracefully...');
+  logger.info('Shutting down gracefully...');
   stopCollector();
   stopLogCollector();
   stopCrowdSecCollector();
@@ -80,3 +92,12 @@ function shutdown() {
 
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
+
+process.on('unhandledRejection', (reason) => {
+  logger.error({ err: reason }, 'Unhandled rejection');
+});
+
+process.on('uncaughtException', (err) => {
+  logger.error({ err }, 'Uncaught exception');
+  shutdown();
+});

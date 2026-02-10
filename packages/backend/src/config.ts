@@ -1,15 +1,42 @@
+import { z } from 'zod';
+
+const envSchema = z.object({
+  PORT: z.coerce.number().int().min(1).max(65535).default(3001),
+  DATA_DIR: z.string().default('/var/lib/shipit'),
+  GITEA_URL: z.string().url().default('http://localhost:3000'),
+  JWT_SECRET: z.string().min(1).default('change-me-in-production'),
+  ADMIN_USER: z.string().min(1).default('admin'),
+  ADMIN_PASSWORD: z.string().min(1).default('changeme'),
+  WEBHOOK_SECRET: z.string().default('change-me-webhook-secret'),
+  GITEA_TOKEN: z.string().default(''),
+  BASE_DOMAIN: z.string().default('localhost'),
+  DASHBOARD_DOMAIN: z.string().default('localhost'),
+  SELF_REPO: z.string().default(''),
+  SELF_DEPLOY_ENABLED: z.string().default('false'),
+});
+
+const parsed = envSchema.parse(process.env);
+
 export const config = {
-  port: parseInt(process.env.PORT ?? '3001'),
-  dataDir: process.env.DATA_DIR ?? '/var/lib/shipit',
-  giteaUrl: process.env.GITEA_URL ?? 'http://localhost:3000',
+  port: parsed.PORT,
+  dataDir: parsed.DATA_DIR,
+  giteaUrl: parsed.GITEA_URL,
   version: '0.2.0',
-  jwtSecret: process.env.JWT_SECRET ?? 'change-me-in-production',
-  adminUser: process.env.ADMIN_USER ?? 'admin',
-  adminPassword: process.env.ADMIN_PASSWORD ?? 'changeme',
-  webhookSecret: process.env.WEBHOOK_SECRET ?? 'change-me-webhook-secret',
-  giteaToken: process.env.GITEA_TOKEN ?? '',
-  baseDomain: process.env.BASE_DOMAIN ?? 'localhost',
-  dashboardDomain: process.env.DASHBOARD_DOMAIN ?? 'localhost',
-  selfRepo: process.env.SELF_REPO ?? '',
-  selfDeployEnabled: process.env.SELF_DEPLOY_ENABLED === 'true',
+  jwtSecret: parsed.JWT_SECRET,
+  adminUser: parsed.ADMIN_USER,
+  adminPassword: parsed.ADMIN_PASSWORD,
+  webhookSecret: parsed.WEBHOOK_SECRET,
+  giteaToken: parsed.GITEA_TOKEN,
+  baseDomain: parsed.BASE_DOMAIN,
+  dashboardDomain: parsed.DASHBOARD_DOMAIN,
+  selfRepo: parsed.SELF_REPO,
+  selfDeployEnabled: parsed.SELF_DEPLOY_ENABLED === 'true',
 };
+
+// Warn on insecure defaults
+if (config.jwtSecret === 'change-me-in-production') {
+  console.warn('[config] WARNING: Using default JWT_SECRET — change in production!');
+}
+if (config.adminPassword === 'changeme') {
+  console.warn('[config] WARNING: Using default ADMIN_PASSWORD — change in production!');
+}

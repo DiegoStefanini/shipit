@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import ProjectCard from '../components/ProjectCard'
 import { ProjectCardSkeleton } from '../components/Skeleton'
+import EmptyState from '../components/EmptyState'
 import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
 import type { Project } from '../types'
@@ -88,27 +89,23 @@ export default function Dashboard() {
       )}
 
       {loading ? (
-        <div className="project-grid">
+        <div className="project-grid" role="status">
           {[1, 2, 3].map((i) => (
             <ProjectCardSkeleton key={i} />
           ))}
         </div>
       ) : error ? (
-        <div className="error-msg">{error}</div>
+        <div className="error-msg" role="alert">{error}</div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">&#9650;</div>
-          <h2>No projects found</h2>
-          <p>
-            {projects.length === 0 ? (
-              <>
-                Get started by <Link to="/new" className="link-primary">creating your first project</Link>.
-              </>
-            ) : (
-              'No projects match your search.'
-            )}
-          </p>
-        </div>
+        <EmptyState icon="projects" title="No projects found">
+          {projects.length === 0 ? (
+            <>
+              Get started by <Link to="/new" className="link-primary">creating your first project</Link>.
+            </>
+          ) : (
+            'No projects match your search.'
+          )}
+        </EmptyState>
       ) : (
         <div className="project-grid">
           {filtered.map((p) => (

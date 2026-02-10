@@ -1,3 +1,4 @@
+import EmptyState from '../EmptyState'
 import type { NotificationChannel } from '../../types'
 
 interface ChannelListProps {
@@ -11,11 +12,9 @@ interface ChannelListProps {
 export default function ChannelList({ channels, onTest, onToggle, onEdit, onDelete }: ChannelListProps) {
   if (channels.length === 0) {
     return (
-      <div className="empty-state">
-        <div className="empty-state-icon">&#128276;</div>
-        <h2>No channels configured</h2>
-        <p className="text-muted">Add a Telegram or Discord channel to receive notifications.</p>
-      </div>
+      <EmptyState icon="alerts" title="No channels configured">
+        Add a Telegram or Discord channel to receive notifications.
+      </EmptyState>
     )
   }
 
@@ -34,7 +33,7 @@ export default function ChannelList({ channels, onTest, onToggle, onEdit, onDele
               {ch.enabled ? 'Disable' : 'Enable'}
             </button>
             <button className="btn btn-sm" onClick={() => onEdit(ch)}>Edit</button>
-            <button className="btn btn-sm btn-danger" onClick={() => onDelete(ch.id)}>Delete</button>
+            <button className="btn btn-sm btn-danger" onClick={() => onDelete(ch.id)} aria-label={`Delete channel ${ch.name}`}>Delete</button>
           </div>
         </div>
       ))}

@@ -53,7 +53,7 @@ export default function Login() {
         </div>
         <p className="login-kicker">Control Plane</p>
         <p className="login-subtitle">Sign in to your account</p>
-        {error && <div className="error-msg">{error}</div>}
+        {error && <div className="error-msg" role="alert">{error}</div>}
         <form onSubmit={handleSubmit}>
           <div className="form-group">
             <label>Username</label>
@@ -80,6 +80,7 @@ export default function Login() {
             {submitting ? 'Signing in...' : 'Sign in'}
           </button>
         </form>
+        <p className="login-hint">Press Enter to sign in</p>
       </div>
     </div>
   )

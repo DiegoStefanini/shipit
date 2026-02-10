@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import LogFilter from '../components/LogFilter'
 import LogLine from '../components/LogLine'
+import { Skeleton } from '../components/Skeleton'
+import EmptyState from '../components/EmptyState'
 import type { LogEntry, LogsResponse } from '../types'
 import { usePolling } from '../hooks/usePolling'
 
@@ -145,9 +147,15 @@ export default function Logs() {
 
       <div className="log-list">
         {loading && displayLogs.length === 0 ? (
-          <div className="loading">Loading logs...</div>
+          <div style={{ padding: 14, display: 'flex', flexDirection: 'column' as const, gap: 6 }} role="status">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <Skeleton key={i} height="24px" />
+            ))}
+          </div>
         ) : displayLogs.length === 0 ? (
-          <div className="loading">No logs found</div>
+          <EmptyState icon="logs" title="No logs found">
+            Adjust filters or wait for new log entries.
+          </EmptyState>
         ) : (
           <>
             {displayLogs.map((entry) => (

@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react'
 import HostOverviewCard from '../components/HostOverviewCard'
 import MetricChart from '../components/MetricChart'
 import { Skeleton } from '../components/Skeleton'
+import EmptyState from '../components/EmptyState'
 import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
 import type { MonitoringOverview, MetricSeries, ContainerMetrics } from '../types'
@@ -90,7 +91,7 @@ export default function Monitoring() {
       </div>
 
       {loading ? (
-        <div className="monitoring-grid">
+        <div className="monitoring-grid" role="status">
           {[1, 2, 3].map(i => (
             <div key={i} className="host-overview-card">
               <Skeleton width="60%" height="20px" />
@@ -103,13 +104,11 @@ export default function Monitoring() {
           ))}
         </div>
       ) : error ? (
-        <div className="error-msg">{error}</div>
+        <div className="error-msg" role="alert">{error}</div>
       ) : overview.length === 0 ? (
-        <div className="empty-state">
-          <div className="empty-state-icon">&#9632;</div>
-          <h2>No hosts configured</h2>
-          <p>Add hosts in the Hosts section to start monitoring.</p>
-        </div>
+        <EmptyState icon="monitoring" title="No hosts configured">
+          Add hosts in the Hosts section to start monitoring.
+        </EmptyState>
       ) : (
         <>
           <div className="monitoring-grid">

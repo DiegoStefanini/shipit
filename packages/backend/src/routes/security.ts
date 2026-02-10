@@ -3,6 +3,7 @@ import db from '../db/connection.js';
 import { blockIP, unblockIP } from '../services/crowdsec.js';
 import { validate } from '../middleware/validate.js';
 import { blockIPSchema, unblockIPSchema } from '../validation/schemas.js';
+import { asyncHandler } from '../middleware/async-handler.js';
 
 const router = Router();
 
@@ -79,19 +80,19 @@ router.get('/decisions', (req: Request, res: Response) => {
 });
 
 // POST /api/security/block
-router.post('/block', validate(blockIPSchema), async (req: Request, res: Response) => {
+router.post('/block', validate(blockIPSchema), asyncHandler(async (req: Request, res: Response) => {
   const { host_id, ip, duration, reason } = req.body;
 
   const result = await blockIP(host_id, ip, duration || '24h', reason || 'manual block');
   res.json(result);
-});
+}));
 
 // POST /api/security/unblock
-router.post('/unblock', validate(unblockIPSchema), async (req: Request, res: Response) => {
+router.post('/unblock', validate(unblockIPSchema), asyncHandler(async (req: Request, res: Response) => {
   const { host_id, ip } = req.body;
 
   const result = await unblockIP(host_id, ip);
   res.json(result);
-});
+}));
 
 export default router;

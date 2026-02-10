@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Skeleton } from '../components/Skeleton'
 import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
 import ChannelForm from '../components/alerts/ChannelForm'
@@ -274,8 +275,27 @@ export default function Alerts() {
 
   const formatTime = (ts: number) => new Date(ts).toLocaleString()
 
-  if (loading) return <div className="loading">Loading alerts...</div>
-  if (error) return <div className="error-msg">{error}</div>
+  if (loading) return (
+    <div className="alerts-page" role="status">
+      <div className="page-header">
+        <h1>Alerts</h1>
+      </div>
+      <div className="alerts-stats">
+        {[1, 2, 3].map(i => (
+          <div key={i} className="alerts-stat-card">
+            <Skeleton width="50%" height="28px" />
+            <div style={{ marginTop: 8 }}><Skeleton width="70%" height="12px" /></div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 20, display: 'flex', flexDirection: 'column' as const, gap: 8 }}>
+        {[1, 2, 3].map(i => (
+          <Skeleton key={i} height="48px" />
+        ))}
+      </div>
+    </div>
+  )
+  if (error) return <div className="error-msg" role="alert">{error}</div>
 
   return (
     <div className="alerts-page">
@@ -300,7 +320,7 @@ export default function Alerts() {
       </div>
 
       {actionMsg && (
-        <div className={actionMsg.startsWith('Error') ? 'error-msg' : 'success-msg'}>
+        <div className={actionMsg.startsWith('Error') ? 'error-msg' : 'success-msg'} role="alert">
           {actionMsg}
         </div>
       )}

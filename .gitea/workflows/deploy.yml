@@ -4,7 +4,20 @@ on:
     branches: [main]
 
 jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: npm ci
+      - run: cd packages/backend && npx tsc --noEmit
+      - run: cd packages/frontend && npx tsc --noEmit
+      - run: cd packages/backend && npm test
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     steps:
       - name: Deploy via SSH

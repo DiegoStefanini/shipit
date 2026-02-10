@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
+import { Skeleton } from '../components/Skeleton'
 import { usePolling } from '../hooks/usePolling'
 import { apiFetch } from '../api'
 import type { SecurityOverview, SecurityAlert, SecurityDecision, Host } from '../types'
@@ -136,8 +137,25 @@ export default function Security() {
     return d.toLocaleString()
   }
 
-  if (loading) return <div className="loading">Loading security data...</div>
-  if (error) return <div className="error-msg">{error}</div>
+  if (loading) return (
+    <div className="security-page" role="status">
+      <div className="page-header">
+        <h1>Security</h1>
+      </div>
+      <div className="security-stats">
+        {[1, 2, 3, 4].map(i => (
+          <div key={i} className="security-stat-card">
+            <Skeleton width="60%" height="28px" />
+            <div style={{ marginTop: 8 }}><Skeleton width="80%" height="12px" /></div>
+          </div>
+        ))}
+      </div>
+      <div style={{ marginTop: 20 }}>
+        <Skeleton height="200px" />
+      </div>
+    </div>
+  )
+  if (error) return <div className="error-msg" role="alert">{error}</div>
 
   const topScenario = overview?.top_scenarios?.[0]?.scenario ?? '-'
   const topCountry = overview?.top_countries?.[0]?.source_country ?? '-'
@@ -192,7 +210,7 @@ export default function Security() {
 
       {/* Action message */}
       {actionMsg && (
-        <div className={actionMsg.startsWith('Error') ? 'error-msg' : 'success-msg'}>
+        <div className={actionMsg.startsWith('Error') ? 'error-msg' : 'success-msg'} role="alert">
           {actionMsg}
         </div>
       )}
@@ -322,6 +340,7 @@ export default function Security() {
                       className="btn btn-danger"
                       style={{ padding: '4px 10px', fontSize: '0.8rem' }}
                       onClick={() => handleUnblock(d.host_id, d.source_ip)}
+                      aria-label={`Unblock IP ${d.source_ip}`}
                     >
                       Unblock
                     </button>

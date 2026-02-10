@@ -1,3 +1,4 @@
+import EmptyState from '../EmptyState'
 import type { AlertRule } from '../../types'
 
 interface RuleListProps {
@@ -11,11 +12,9 @@ interface RuleListProps {
 export default function RuleList({ rules, onToggle, onEdit, onDelete, formatTime }: RuleListProps) {
   if (rules.length === 0) {
     return (
-      <div className="empty-state">
-        <div className="empty-state-icon">&#9888;</div>
-        <h2>No alert rules</h2>
-        <p className="text-muted">Create rules to get notified about issues.</p>
-      </div>
+      <EmptyState icon="alerts" title="No alert rules">
+        Create rules to get notified about issues.
+      </EmptyState>
     )
   }
 
@@ -38,7 +37,7 @@ export default function RuleList({ rules, onToggle, onEdit, onDelete, formatTime
               {rule.enabled ? 'Disable' : 'Enable'}
             </button>
             <button className="btn btn-sm" onClick={() => onEdit(rule)}>Edit</button>
-            <button className="btn btn-sm btn-danger" onClick={() => onDelete(rule.id)}>Delete</button>
+            <button className="btn btn-sm btn-danger" onClick={() => onDelete(rule.id)} aria-label={`Delete rule ${rule.name}`}>Delete</button>
           </div>
         </div>
       ))}

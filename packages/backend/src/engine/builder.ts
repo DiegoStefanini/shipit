@@ -4,6 +4,7 @@ import { emitLog } from '../ws/logs.js';
 import { exec, execStream } from '../services/ssh.js';
 import { generateDockerfile, portForLanguage } from './dockerfiles.js';
 import { detectLanguageRemote } from './detector.js';
+import { logger } from '../logger.js';
 
 const SAFE_REF = /^[a-zA-Z0-9._\-\/]+$/;
 
@@ -27,7 +28,7 @@ async function processQueue(): Promise<void> {
   try {
     await runBuild(item.projectId);
   } catch (err) {
-    console.error('Build failed unexpectedly:', err);
+    logger.error({ err }, 'Build failed unexpectedly');
   } finally {
     building = false;
     processQueue();
@@ -37,7 +38,7 @@ async function processQueue(): Promise<void> {
 async function runBuild(projectId: string): Promise<void> {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId) as Record<string, unknown> | undefined;
   if (!project) {
-    console.error(`Project ${projectId} not found`);
+    logger.error({ projectId }, 'Project not found');
     return;
   }
 

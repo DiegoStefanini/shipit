@@ -1,6 +1,7 @@
 import db from '../db/connection.js';
 import * as proxmox from './proxmox.js';
 import { exec } from './ssh.js';
+import { logger } from '../logger.js';
 
 let collectorInterval: ReturnType<typeof setInterval> | null = null;
 let cleanupInterval: ReturnType<typeof setInterval> | null = null;
@@ -26,7 +27,7 @@ async function collectAll(): Promise<void> {
     try {
       await collectHostMetrics(host);
     } catch (err) {
-      console.error(`Failed to collect metrics for host ${host.name}:`, err);
+      logger.error({ err, host: host.name }, 'Failed to collect metrics for host');
       // Mark host as offline
       db.prepare('UPDATE hosts SET status = ?, updated_at = ? WHERE id = ?')
         .run('offline', Date.now(), host.id);
@@ -69,7 +70,7 @@ async function collectHostMetrics(host: Record<string, unknown>): Promise<void> 
           .run('online', now, now, hostId);
       }
     } catch (err) {
-      console.error(`Proxmox metrics failed for ${host.name}:`, err);
+      logger.error({ err, host: host.name }, 'Proxmox metrics failed');
     }
   }
 
