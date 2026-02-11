@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ShipIt — Self-hosted Infrastructure Management for Proxmox</title>
+  <meta name="description" content="Deploy, monitor, and secure Docker services from a single control plane. Zero agents, all SSH.">
+  <meta property="og:title" content="ShipIt — Infrastructure Management for Proxmox Homelabs">
+  <meta property="og:description" content="Deploy, monitor, and secure Docker services from a single control plane. Zero agents.">
+  <meta property="og:image" content="https://raw.githubusercontent.com/DiegoStefanini/shipit/main/docs/screenshots/dashboard.png">
+  <meta property="og:url" content="https://diegostefanini.github.io/shipit/">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #06090f;
+      --bg-card: #0d1117;
+      --bg-card-hover: #131a24;
+      --border: #1e2a3a;
+      --text: #e2e8f0;
+      --text-muted: #8896a8;
+      --orange: #f97316;
+      --orange-glow: rgba(249, 115, 22, 0.15);
+      --blue: #3b82f6;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { color: var(--orange); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* Hero */
+    .hero {
+      text-align: center;
+      padding: 80px 24px 60px;
+      position: relative;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, var(--orange-glow) 0%, transparent 70%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .hero-content { position: relative; z-index: 1; max-width: 720px; margin: 0 auto; }
+
+    .logo {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .logo svg { width: 48px; height: 48px; }
+
+    .logo-text {
+      font-size: 2.5rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      max-width: 560px;
+      margin: 0 auto 32px;
+    }
+
+    .hero-buttons {
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 28px;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      border: none;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .btn:hover { transform: translateY(-1px); text-decoration: none; }
+
+    .btn-primary {
+      background: var(--orange);
+      color: #fff;
+      box-shadow: 0 4px 20px var(--orange-glow);
+    }
+
+    .btn-primary:hover { box-shadow: 0 6px 30px rgba(249, 115, 22, 0.3); }
+
+    .btn-secondary {
+      background: var(--bg-card);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover { border-color: var(--text-muted); }
+
+    /* Badges */
+    .badges {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin-bottom: 32px;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+
+    .badge span { color: var(--orange); }
+
+    /* Features */
+    .features {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 40px 24px 80px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 28px;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--orange);
+      transform: translateY(-2px);
+    }
+
+    .feature-icon {
+      font-size: 1.5rem;
+      margin-bottom: 12px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
+
+    /* Screenshots */
+    .screenshots {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .screenshots h2 {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 40px;
+    }
+
+    .screenshot-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(480px, 1fr));
+      gap: 20px;
+    }
+
+    .screenshot-item {
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .screenshot-item:hover {
+      border-color: var(--orange);
+      transform: translateY(-2px);
+    }
+
+    .screenshot-item img {
+      width: 100%;
+      display: block;
+    }
+
+    .screenshot-label {
+      padding: 12px 16px;
+      background: var(--bg-card);
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-align: center;
+    }
+
+    /* Architecture */
+    .architecture {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+      text-align: center;
+    }
+
+    .architecture h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .architecture p {
+      color: var(--text-muted);
+      margin-bottom: 32px;
+    }
+
+    .arch-diagram {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      text-align: left;
+      white-space: pre;
+      overflow-x: auto;
+      line-height: 1.7;
+    }
+
+    .arch-diagram .hl { color: var(--orange); }
+    .arch-diagram .bl { color: var(--blue); }
+
+    /* Stack */
+    .stack {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 0 24px 80px;
+    }
+
+    .stack h2 {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 32px;
+    }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .stack-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.9rem;
+    }
+
+    .stack-item .label { color: var(--text-muted); }
+    .stack-item .value { font-weight: 600; }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 40px 24px;
+      border-top: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .footer a { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .logo-text { font-size: 2rem; }
+      .tagline { font-size: 1.05rem; }
+      .screenshot-grid { grid-template-columns: 1fr; }
+      .stack-grid { grid-template-columns: 1fr; }
+      .arch-diagram { font-size: 0.7rem; padding: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <section class="hero">
+    <div class="hero-content">
+      <div class="logo">
+        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 4L6 18h9v18h10V18h9L20 4z" fill="#f97316"/>
+          <path d="M20 4L6 18h9v18h10V18h9L20 4z" fill="url(#g)" fill-opacity="0.3"/>
+          <defs><linearGradient id="g" x1="20" y1="4" x2="20" y2="36"><stop stop-color="#3b82f6"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs>
+        </svg>
+        <span class="logo-text">ShipIt</span>
+      </div>
+
+      <div class="badges">
+        <span class="badge"><span>MIT</span> License</span>
+        <span class="badge">TypeScript <span>5.6</span></span>
+        <span class="badge">React <span>19</span></span>
+        <span class="badge"><span>160</span> Tests</span>
+      </div>
+
+      <p class="tagline">
+        Self-hosted infrastructure management for Proxmox homelabs.<br>
+        Deploy, monitor, and secure Docker services from a single control plane.
+      </p>
+
+      <div class="hero-buttons">
+        <a href="https://github.com/DiegoStefanini/shipit" class="btn btn-primary">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+          View on GitHub
+        </a>
+        <a href="https://github.com/DiegoStefanini/shipit/releases/tag/v1.0.0" class="btn btn-secondary">
+          v1.0.0 Release
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="features">
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F680;</div>
+      <h3>Deploy</h3>
+      <p>Git push to Gitea triggers SSH-based Docker builds on remote hosts. Auto-detects Node.js, Python, Go, and static sites.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4CA;</div>
+      <h3>Monitoring</h3>
+      <p>System metrics via Proxmox API + Docker container stats via SSH. CPU, RAM, disk, and network at a glance.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F4DC;</div>
+      <h3>Centralized Logs</h3>
+      <p>Container, journald, and HTTP logs collected via SSH. Live tailing with WebSocket streaming.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F6E1;</div>
+      <h3>Security</h3>
+      <p>CrowdSec integration with alerts, active bans, and manual IP block/unblock. All from the dashboard.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F514;</div>
+      <h3>Alerting</h3>
+      <p>Rule-based notifications via Telegram and Discord. Metric thresholds, service down, security events.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-icon">&#x1F504;</div>
+      <h3>Zero Agents</h3>
+      <p>No extra processes on your hosts. Everything works over SSH and the Proxmox API. Just add your keys.</p>
+    </div>
+  </section>
+
+  <section class="screenshots">
+    <h2>Screenshots</h2>
+    <div class="screenshot-grid">
+      <div class="screenshot-item">
+        <img src="docs/screenshots/dashboard.png" alt="Dashboard" loading="lazy">
+        <div class="screenshot-label">Dashboard</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="docs/screenshots/deploy.png" alt="Hosts" loading="lazy">
+        <div class="screenshot-label">Hosts</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="docs/screenshots/security.png" alt="Security" loading="lazy">
+        <div class="screenshot-label">Security</div>
+      </div>
+      <div class="screenshot-item">
+        <img src="docs/screenshots/logs.png" alt="Logs" loading="lazy">
+        <div class="screenshot-label">Logs</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="architecture">
+    <h2>Architecture</h2>
+    <p>ShipIt runs on a lightweight Proxmox CT. No Docker on the management server itself.</p>
+    <div class="arch-diagram"><span class="bl">Browser</span>  ───&gt;  <span class="hl">ShipIt (CT 200)</span>  ───&gt;  <span class="bl">Docker Host (VM 101)</span>
+ React SPA       Express + SQLite        Docker containers
+                  bare metal               via SSH
+
+                 <span class="hl">Gitea (CT 201)</span>
+                      │
+                 webhook push
+                      ▼
+                 <span class="hl">ShipIt API</span>  ───&gt;  SSH deploy</div>
+  </section>
+
+  <section class="stack">
+    <h2>Tech Stack</h2>
+    <div class="stack-grid">
+      <div class="stack-item"><span class="label">Frontend</span><span class="value">React 19 + Vite 6</span></div>
+      <div class="stack-item"><span class="label">Backend</span><span class="value">Express + TypeScript</span></div>
+      <div class="stack-item"><span class="label">Database</span><span class="value">SQLite</span></div>
+      <div class="stack-item"><span class="label">Auth</span><span class="value">JWT</span></div>
+      <div class="stack-item"><span class="label">Validation</span><span class="value">Zod</span></div>
+      <div class="stack-item"><span class="label">Logging</span><span class="value">pino</span></div>
+      <div class="stack-item"><span class="label">Testing</span><span class="value">Vitest + Playwright</span></div>
+      <div class="stack-item"><span class="label">Security</span><span class="value">helmet + CrowdSec</span></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <p>MIT License &middot; Built by <a href="https://github.com/DiegoStefanini">Diego Stefanini</a></p>
+  </footer>
+
+</body>
+</html>
