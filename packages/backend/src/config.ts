@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { logger } from './logger.js';
 
 const envSchema = z.object({
   PORT: z.coerce.number().int().min(1).max(65535).default(3001),
@@ -35,8 +36,8 @@ export const config = {
 
 // Warn on insecure defaults
 if (config.jwtSecret === 'change-me-in-production') {
-  console.warn('[config] WARNING: Using default JWT_SECRET — change in production!');
+  logger.warn('Using default JWT_SECRET — change in production!');
 }
 if (config.adminPassword === 'changeme') {
-  console.warn('[config] WARNING: Using default ADMIN_PASSWORD — change in production!');
+  logger.warn('Using default ADMIN_PASSWORD — change in production!');
 }

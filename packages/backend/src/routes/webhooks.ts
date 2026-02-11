@@ -4,6 +4,7 @@ import path from 'node:path';
 import db from '../db/connection.js';
 import { enqueueBuild } from '../engine/builder.js';
 import { config } from '../config.js';
+import { logger } from '../logger.js';
 
 const router = Router();
 
@@ -83,18 +84,16 @@ router.post('/gitea/self-deploy', (req: Request, res: Response) => {
   }
 
   const scriptPath = path.resolve('/opt/shipit/deploy/self-deploy.sh');
-  console.log(`[self-deploy] Triggered by push to ${repoFullName}, running ${scriptPath}`);
+  logger.info({ repo: repoFullName, script: scriptPath }, 'Self-deploy triggered');
 
   res.json({ message: 'Self-deploy triggered' });
 
   exec(`bash ${scriptPath}`, { cwd: '/opt/shipit', timeout: 300_000 }, (error, stdout, stderr) => {
     if (error) {
-      console.error(`[self-deploy] FAILED: ${error.message}`);
-      console.error(`[self-deploy] stderr: ${stderr}`);
+      logger.error({ err: error, stderr }, 'Self-deploy failed');
       return;
     }
-    console.log(`[self-deploy] SUCCESS`);
-    if (stdout) console.log(`[self-deploy] stdout: ${stdout}`);
+    logger.info({ stdout }, 'Self-deploy succeeded');
   });
 });
 

@@ -7,3 +7,8 @@ dist/
 .env.*
 !.env.example
 *.log
+*.tsbuildinfo
+test-results/
+tmp-e2e/
+nul
+playwright-report/
