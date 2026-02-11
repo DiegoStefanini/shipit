@@ -98,7 +98,7 @@ export default function Hosts() {
     <div>
       <div className="page-header">
         <h1>Hosts</h1>
-        <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div className="page-header-actions">
           <input
             type="text"
             className="search-input"
@@ -130,7 +130,7 @@ export default function Hosts() {
       )}
 
       {showForm && (
-        <div className="settings-section" style={{ marginBottom: 24 }}>
+        <section className="settings-section" style={{ marginBottom: 24 }}>
           <h2>Add Host</h2>
           <form onSubmit={handleSubmit}>
             <div className="form-group">
@@ -219,7 +219,7 @@ export default function Hosts() {
               {submitting ? 'Creating...' : 'Create Host'}
             </button>
           </form>
-        </div>
+        </section>
       )}
 
       {loading ? (

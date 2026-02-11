@@ -1216,6 +1216,9 @@ label {
 .container-metrics-table tr:hover td { background: rgba(249,115,22,.03); }
 .container-metrics-table tr:hover td:first-child { box-shadow: inset 3px 0 0 var(--primary); }
 .monitoring-detail { margin-top: 24px; }
+.monitoring-detail-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px; }
+.skeleton-chart { margin-top: 12px; }
+.container-metrics-section { margin-top: 24px; }
 .charts-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
@@ -1344,6 +1347,7 @@ label {
 .security-stat-card .stat-label { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
 .security-stat-card.alert .stat-value  { color: var(--red); text-shadow: 0 0 20px rgba(239,68,68,.3); }
 .security-stat-card.active .stat-value { color: var(--yellow); text-shadow: 0 0 20px rgba(234,179,8,.3); }
+.stat-value.stat-text { font-size: 1.1rem; }
 
 .security-tabs { display: flex; gap: 4px; margin-bottom: 14px; }
 .security-tabs button {
@@ -1423,6 +1427,7 @@ label {
 .block-form input,
 .block-form select { padding: 6px 10px; font-size: 12px; }
 .block-form input { flex: 1; min-width: 140px; }
+.block-form input.input-sm { max-width: 120px; flex: 0; }
 
 .alert-chart {
   background: var(--card);

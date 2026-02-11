@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
+import { NotFoundError } from '../errors.js';
 
 const router = Router();
 
@@ -43,10 +44,7 @@ router.get('/hosts/:id', (req: Request, res: Response) => {
   const to = parseInt(req.query.to as string) || Date.now();
 
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(hostId);
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   const metrics = db.prepare(`
     SELECT metric_name, metric_value, collected_at
@@ -71,10 +69,7 @@ router.get('/hosts/:id/containers', (req: Request, res: Response) => {
   const hostId = req.params.id;
 
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(hostId);
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   // Get latest container metrics
   const latest = db.prepare(`

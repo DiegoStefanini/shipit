@@ -23,6 +23,7 @@ import alertsRouter from './routes/alerts.js';
 import { startAlertEvaluator, stopAlertEvaluator } from './services/alert-evaluator.js';
 import db from './db/connection.js';
 import { logger } from './logger.js';
+import { AppError } from './errors.js';
 
 const app = express();
 
@@ -59,6 +60,10 @@ app.use('/api/alerts', authMiddleware, apiLimiter, alertsRouter);
 
 // Global error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  if (err instanceof AppError) {
+    res.status(err.statusCode).json({ error: err.message });
+    return;
+  }
   logger.error({ err }, 'Unhandled error');
   res.status(500).json({ error: 'Internal server error' });
 });

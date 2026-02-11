@@ -182,11 +182,11 @@ export default function Security() {
           <div className="stat-label">Active Bans</div>
         </div>
         <div className="security-stat-card">
-          <div className="stat-value" style={{ fontSize: '1.1rem' }}>{topScenario}</div>
+          <div className="stat-value stat-text">{topScenario}</div>
           <div className="stat-label">Top Scenario</div>
         </div>
         <div className="security-stat-card">
-          <div className="stat-value" style={{ fontSize: '1.1rem' }}>{topCountry}</div>
+          <div className="stat-value stat-text">{topCountry}</div>
           <div className="stat-label">Top Country</div>
         </div>
       </div>
@@ -236,7 +236,7 @@ export default function Security() {
           placeholder="Duration (24h)"
           value={blockDuration}
           onChange={e => setBlockDuration(e.target.value)}
-          style={{ maxWidth: 120 }}
+          className="input-sm"
         />
         <input
           type="text"
@@ -337,8 +337,7 @@ export default function Security() {
                   <td>{d.expires_at ? formatTime(d.expires_at) : '-'}</td>
                   <td>
                     <button
-                      className="btn btn-danger"
-                      style={{ padding: '4px 10px', fontSize: '0.8rem' }}
+                      className="btn btn-danger btn-sm"
                       onClick={() => handleUnblock(d.host_id, d.source_ip)}
                       aria-label={`Unblock IP ${d.source_ip}`}
                     >

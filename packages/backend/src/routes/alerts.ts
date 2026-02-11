@@ -4,6 +4,8 @@ import db from '../db/connection.js';
 import { notify } from '../services/notifier.js';
 import { validate } from '../middleware/validate.js';
 import { createChannelSchema, updateChannelSchema, createRuleSchema, updateRuleSchema } from '../validation/schemas.js';
+import { NotFoundError } from '../errors.js';
+import { asyncHandler } from '../middleware/async-handler.js';
 
 const router = Router();
 
@@ -34,10 +36,7 @@ router.post('/channels', validate(createChannelSchema), (req: Request, res: Resp
 router.patch('/channels/:id', validate(updateChannelSchema), (req: Request, res: Response) => {
   const { id } = req.params;
   const existing = db.prepare('SELECT * FROM notification_channels WHERE id = ?').get(id);
-  if (!existing) {
-    res.status(404).json({ error: 'Channel not found' });
-    return;
-  }
+  if (!existing) throw new NotFoundError('Channel');
 
   const { name, type, config: channelConfig, enabled } = req.body;
   const updates: string[] = [];
@@ -65,19 +64,16 @@ router.patch('/channels/:id', validate(updateChannelSchema), (req: Request, res:
 router.delete('/channels/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const result = db.prepare('DELETE FROM notification_channels WHERE id = ?').run(id);
-  if (result.changes === 0) {
-    res.status(404).json({ error: 'Channel not found' });
-    return;
-  }
+  if (result.changes === 0) throw new NotFoundError('Channel');
   res.json({ success: true });
 });
 
 // POST /api/alerts/channels/:id/test
-router.post('/channels/:id/test', async (req: Request, res: Response) => {
+router.post('/channels/:id/test', asyncHandler(async (req: Request, res: Response) => {
   const id = req.params.id as string;
   const success = await notify(id, 'ShipIt test notification - alerting is working!');
   res.json({ success });
-});
+}));
 
 // --- Alert Rules ---
 
@@ -107,10 +103,7 @@ router.post('/rules', validate(createRuleSchema), (req: Request, res: Response) 
 router.patch('/rules/:id', validate(updateRuleSchema), (req: Request, res: Response) => {
   const { id } = req.params;
   const existing = db.prepare('SELECT * FROM alert_rules WHERE id = ?').get(id);
-  if (!existing) {
-    res.status(404).json({ error: 'Rule not found' });
-    return;
-  }
+  if (!existing) throw new NotFoundError('Rule');
 
   const { name, type, condition, channel_ids, cooldown, enabled } = req.body;
   const updates: string[] = [];
@@ -144,10 +137,7 @@ router.patch('/rules/:id', validate(updateRuleSchema), (req: Request, res: Respo
 router.delete('/rules/:id', (req: Request, res: Response) => {
   const { id } = req.params;
   const result = db.prepare('DELETE FROM alert_rules WHERE id = ?').run(id);
-  if (result.changes === 0) {
-    res.status(404).json({ error: 'Rule not found' });
-    return;
-  }
+  if (result.changes === 0) throw new NotFoundError('Rule');
   res.json({ success: true });
 });
 

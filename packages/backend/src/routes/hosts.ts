@@ -4,6 +4,8 @@ import * as ssh from '../services/ssh.js';
 import * as proxmox from '../services/proxmox.js';
 import { validate } from '../middleware/validate.js';
 import { createHostSchema, updateHostSchema } from '../validation/schemas.js';
+import { NotFoundError, ConflictError } from '../errors.js';
+import { asyncHandler } from '../middleware/async-handler.js';
 
 const router = Router();
 
@@ -45,10 +47,7 @@ router.post('/', validate(createHostSchema), (req: Request, res: Response) => {
     );
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('UNIQUE')) {
-      res.status(409).json({ error: 'Host name already exists' });
-      return;
-    }
+    if (message.includes('UNIQUE')) throw new ConflictError('Host name already exists');
     throw err;
   }
 
@@ -59,20 +58,14 @@ router.post('/', validate(createHostSchema), (req: Request, res: Response) => {
 // GET /api/hosts/:id
 router.get('/:id', (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req));
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
   res.json(host);
 });
 
 // PATCH /api/hosts/:id
 router.patch('/:id', validate(updateHostSchema), (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req));
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   const allowedFields = ['name', 'type', 'proxmox_vmid', 'ip_address', 'ssh_port', 'ssh_user', 'ssh_key_path', 'has_docker', 'has_crowdsec', 'poll_interval'];
   const updates: string[] = [];
@@ -103,10 +96,7 @@ router.patch('/:id', validate(updateHostSchema), (req: Request, res: Response) =
     db.prepare(`UPDATE hosts SET ${updates.join(', ')} WHERE id = ?`).run(...values);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('UNIQUE')) {
-      res.status(409).json({ error: 'Host name already exists' });
-      return;
-    }
+    if (message.includes('UNIQUE')) throw new ConflictError('Host name already exists');
     throw err;
   }
 
@@ -117,10 +107,7 @@ router.patch('/:id', validate(updateHostSchema), (req: Request, res: Response) =
 // DELETE /api/hosts/:id
 router.delete('/:id', (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req));
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   ssh.disconnect(paramId(req));
   db.prepare('DELETE FROM hosts WHERE id = ?').run(paramId(req));
@@ -128,12 +115,9 @@ router.delete('/:id', (req: Request, res: Response) => {
 });
 
 // POST /api/hosts/:id/test
-router.post('/:id/test', async (req: Request, res: Response) => {
+router.post('/:id/test', asyncHandler(async (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req));
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   const result = await ssh.testConnection(paramId(req));
 
@@ -146,15 +130,12 @@ router.post('/:id/test', async (req: Request, res: Response) => {
   }
 
   res.json(result);
-});
+}));
 
 // GET /api/hosts/:id/status
-router.get('/:id/status', async (req: Request, res: Response) => {
+router.get('/:id/status', asyncHandler(async (req: Request, res: Response) => {
   const host = db.prepare('SELECT * FROM hosts WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
-  if (!host) {
-    res.status(404).json({ error: 'Host not found' });
-    return;
-  }
+  if (!host) throw new NotFoundError('Host');
 
   if (!host.proxmox_vmid) {
     res.status(400).json({ error: 'Host has no Proxmox VMID configured' });
@@ -175,6 +156,6 @@ router.get('/:id/status', async (req: Request, res: Response) => {
     const message = err instanceof Error ? err.message : String(err);
     res.status(500).json({ error: message });
   }
-});
+}));
 
 export default router;

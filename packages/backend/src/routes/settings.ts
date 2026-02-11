@@ -5,6 +5,7 @@ import { config } from '../config.js';
 import * as proxmox from '../services/proxmox.js';
 import { validate } from '../middleware/validate.js';
 import { proxmoxSettingsSchema } from '../validation/schemas.js';
+import { asyncHandler } from '../middleware/async-handler.js';
 
 const router = Router();
 
@@ -66,9 +67,9 @@ router.put('/proxmox', validate(proxmoxSettingsSchema), (req: Request, res: Resp
 });
 
 // POST /api/settings/proxmox/test
-router.post('/proxmox/test', async (_req: Request, res: Response) => {
+router.post('/proxmox/test', asyncHandler(async (_req: Request, res: Response) => {
   const result = await proxmox.testConnection();
   res.json(result);
-});
+}));
 
 export default router;

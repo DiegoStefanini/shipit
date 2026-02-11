@@ -1,11 +1,13 @@
 import { Router, Request, Response } from 'express';
 import db from '../db/connection.js';
 import { config } from '../config.js';
+import { logger } from '../logger.js';
 import { enqueueBuild } from '../engine/builder.js';
 import { exec } from '../services/ssh.js';
 import { validate } from '../middleware/validate.js';
 import { createProjectSchema, updateProjectSchema } from '../validation/schemas.js';
 import { asyncHandler } from '../middleware/async-handler.js';
+import { NotFoundError, ConflictError } from '../errors.js';
 
 async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void> {
   if (!config.giteaToken) return;
@@ -25,7 +27,7 @@ async function createGiteaWebhook(giteaUrl: string, repo: string): Promise<void>
       }),
     });
   } catch (err) {
-    console.error('Failed to create Gitea webhook:', err);
+    logger.error({ err }, 'Failed to create Gitea webhook');
   }
 }
 
@@ -58,10 +60,7 @@ router.post('/', validate(createProjectSchema), (req: Request, res: Response) =>
     ).run(id, name, gitea_repo, gitea_url, branch ?? 'main', now, now);
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : String(err);
-    if (message.includes('UNIQUE')) {
-      res.status(409).json({ error: 'Project name already exists' });
-      return;
-    }
+    if (message.includes('UNIQUE')) throw new ConflictError('Project name already exists');
     throw err;
   }
 
@@ -73,20 +72,14 @@ router.post('/', validate(createProjectSchema), (req: Request, res: Response) =>
 // GET /api/projects/:id
 router.get('/:id', (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
   res.json(project);
 });
 
 // PATCH /api/projects/:id
 router.patch('/:id', validate(updateProjectSchema), (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   const { name, branch, env_vars } = req.body;
   const updates: string[] = [];
@@ -122,10 +115,7 @@ router.patch('/:id', validate(updateProjectSchema), (req: Request, res: Response
 // DELETE /api/projects/:id
 router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   const hostId = project.host_id as string | null;
   const containerName = `shipit-${project.name as string}`;
@@ -145,10 +135,7 @@ router.delete('/:id', asyncHandler(async (req: Request, res: Response) => {
 // POST /api/projects/:id/deploy
 router.post('/:id/deploy', (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   enqueueBuild(paramId(req));
   res.json({ message: 'Deploy queued' });
@@ -157,10 +144,7 @@ router.post('/:id/deploy', (req: Request, res: Response) => {
 // POST /api/projects/:id/stop
 router.post('/:id/stop', asyncHandler(async (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   if (project.status !== 'running') {
     res.status(400).json({ error: 'Project is not running' });
@@ -185,10 +169,7 @@ router.post('/:id/stop', asyncHandler(async (req: Request, res: Response) => {
 // POST /api/projects/:id/start
 router.post('/:id/start', (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req)) as Record<string, unknown> | undefined;
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   if (project.status !== 'stopped') {
     res.status(400).json({ error: 'Project is not stopped' });
@@ -202,10 +183,7 @@ router.post('/:id/start', (req: Request, res: Response) => {
 // GET /api/projects/:id/deploys
 router.get('/:id/deploys', (req: Request, res: Response) => {
   const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(paramId(req));
-  if (!project) {
-    res.status(404).json({ error: 'Project not found' });
-    return;
-  }
+  if (!project) throw new NotFoundError('Project');
 
   const deploys = db.prepare(
     'SELECT * FROM deploys WHERE project_id = ? ORDER BY started_at DESC',

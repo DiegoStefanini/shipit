@@ -126,7 +126,7 @@ export default function Monitoring() {
 
           {selectedHost && selectedOverview && (
             <div className="monitoring-detail">
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div className="monitoring-detail-header">
                 <h2>{selectedOverview.host_name} — Detail</h2>
                 <div className="time-range-selector">
                   {TIME_RANGES.map(tr => (
@@ -146,7 +146,7 @@ export default function Monitoring() {
                   {[1, 2, 3, 4].map(i => (
                     <div key={i} className="metric-chart-container">
                       <Skeleton width="40%" height="16px" />
-                      <div style={{ marginTop: 12 }}>
+                      <div className="skeleton-chart">
                         <Skeleton height="120px" />
                       </div>
                     </div>
@@ -191,7 +191,7 @@ export default function Monitoring() {
                   </div>
 
                   {containers && Object.keys(containers.containers).length > 0 && (
-                    <div style={{ marginTop: 24 }}>
+                    <section className="container-metrics-section">
                       <h3 className="section-title">Docker Containers</h3>
                       <table className="container-metrics-table">
                         <thead>
@@ -213,7 +213,7 @@ export default function Monitoring() {
                           ))}
                         </tbody>
                       </table>
-                    </div>
+                    </section>
                   )}
                 </>
               )}
